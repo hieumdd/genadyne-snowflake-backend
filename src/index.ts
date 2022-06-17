@@ -1,9 +1,9 @@
-import functions from 'firebase-functions';
+import { http } from '@google-cloud/functions-framework';
 import express from 'express';
 
-import snowflakeController from './snowflake/snowflake.controller';
+import patientController from './patient/patient.controller';
 
 const app = express();
-app.use(snowflakeController);
+app.use(patientController);
 
-exports.main = functions.https.onRequest(app);
+http('main', app);

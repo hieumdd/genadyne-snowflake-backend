@@ -1,5 +1,5 @@
 import { Connection } from 'snowflake-sdk';
-import { connectionPromise, disconnect, execute } from './snowflake.repository';
+import { connectionPromise, disconnect, execute } from '.';
 
 it('connect - disconnect', async () => {
     const connection = await connectionPromise;

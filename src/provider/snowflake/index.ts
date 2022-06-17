@@ -33,3 +33,13 @@ export const execute: Execute = (connection, sqlText) =>
                 err || !rows ? reject(err) : resolve(rows),
         });
     });
+
+export const getRepository = () => async (sqlText: string) => {
+    // debug
+
+    console.log({ isUp: connection.isUp() });
+    const _connection = await connectionPromise;
+    console.log({ isUp: connection.isUp() });
+
+    return execute(_connection, sqlText);
+};
