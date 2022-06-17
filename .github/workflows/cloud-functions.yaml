@@ -12,7 +12,7 @@ concurrency: ${{ github.ref }}
 env:
   ENV_KEY: env-vars
   ENV_FILE: env.yaml
-  GCP_SA: bivuanem@voltaic-country-280607.iam.gserviceaccount.com
+  GCP_SA: etl-55@charge-bee.iam.gserviceaccount.com
 
 jobs:
   set-env:
@@ -32,7 +32,9 @@ jobs:
         run: echo "::set-output name=fn-name::${{ env.FUNCTION_NAME}}"
 
       - run: |
-          echo "ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}" >> ${{ env.ENV_FILE }}
+          echo "SF_USERNAME: ${{ secrets.SF_USERNAME }}" >> ${{ env.ENV_FILE }}
+          echo "SF_PASSWORD: ${{ secrets.SF_PASSWORD }}" >> ${{ env.ENV_FILE }}
+
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.ENV_KEY }}
