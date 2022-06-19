@@ -4,7 +4,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import { execute, connectionPromise } from './providers/snowflake';
 import routes from './routes';
 
-const snowflake = async (req: Request, res: Response, next: NextFunction) => {
+const snowflake = async (req: Request, _: Response, next: NextFunction) => {
     req.snowflake = await connectionPromise;
     next();
 };
