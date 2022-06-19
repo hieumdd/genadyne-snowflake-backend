@@ -1,24 +1,25 @@
 import { Connection } from 'snowflake-sdk';
-import { connect, disconnect, execute } from './snowflake.repository';
+import { connectionPromise, disconnect, execute } from '.';
 
 it('connect - disconnect', async () => {
-    return connect()
-        .then((conn) => {
-            expect(conn.isUp()).toBe(true);
-            return disconnect(conn);
-        })
-        .then((conn) => expect(conn.isUp()).toBe(false));
+    const connection = await connectionPromise;
+
+    expect(connection.isUp()).toBe(true);
+
+    await disconnect();
+
+    expect(connection.isUp()).toBe(false);
 });
 
 describe('repo', () => {
     let connection: Connection;
 
     beforeEach(async () => {
-        connection = await connect();
+        connection = await connectionPromise;
     });
 
     afterEach(async () => {
-        await disconnect(connection);
+        await disconnect();
     });
 
     it('execute', async () => {
