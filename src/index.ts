@@ -20,7 +20,13 @@ app.get('/:route', (req: Request, res: Response) => {
         res.status(404).json({ error: `Route ${route} not found` });
         return;
     }
-    execute(req.snowflake, routes[route])
+    const { page, count } = req.query;
+    const [_page, _count] = [page, count].map((i) => parseInt(<string>i));
+
+    execute(
+        req.snowflake,
+        routes[route] + ` LIMIT ${_count} OFFSET ${_page * _count}`,
+    )
         .then((data) => res.json({ data }))
         .catch((err) => res.status(500).json({ error: err.message }));
 });

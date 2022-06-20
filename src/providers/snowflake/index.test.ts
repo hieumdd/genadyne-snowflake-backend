@@ -23,7 +23,7 @@ describe('repo', () => {
     });
 
     it('execute', async () => {
-        const sql = 'SELECT * from "LIVE DATA".RESMED.PATIENTLIST_SRC LIMIT 5';
+        const sql = 'SELECT * from "LIVE DATA".RESPIRONICS.PATIENTSESSIONS_SRC ORDER BY PATIENTID LIMIT 500 OFFSET 500';
         return execute(connection, sql).then((data) =>
             expect(data).toBeTruthy(),
         );
