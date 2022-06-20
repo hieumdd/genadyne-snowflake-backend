@@ -1,3 +1,4 @@
 export default {
-    patient: 'SELECT * from "LIVE DATA".RESMED.PATIENTLIST_SRC LIMIT 5',
+    'patient-session':
+        'SELECT * from "LIVE DATA".RESPIRONICS.PATIENTSESSIONS_SRC ORDER BY PATIENTID',
 } as Record<string, string>;
