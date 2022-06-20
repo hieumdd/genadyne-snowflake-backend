@@ -20,7 +20,7 @@ app.get('/:route', (req: Request, res: Response) => {
         res.status(404).json({ error: `Route ${route} not found` });
         return;
     }
-    const { page, count } = req.query;
+    const { page = '0', count = '10' } = req.query;
     const [_page, _count] = [page, count].map((i) => parseInt(<string>i));
 
     execute(
