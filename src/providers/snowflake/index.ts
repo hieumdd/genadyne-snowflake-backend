@@ -1,8 +1,11 @@
 import snowflake, { Connection } from 'snowflake-sdk';
+import knex from 'knex';
 
 export type Data = {
     [key: string]: any;
 };
+
+export const QueryBuilder = knex({ client: 'pg' });
 
 export const connection = snowflake.createConnection({
     account: 'twa58413.us-east-1',
@@ -33,13 +36,3 @@ export const execute: Execute = (connection, sqlText) =>
                 err || !rows ? reject(err) : resolve(rows),
         });
     });
-
-export const getRepository = () => async (sqlText: string) => {
-    // debug
-
-    console.log({ isUp: connection.isUp() });
-    const _connection = await connectionPromise;
-    console.log({ isUp: connection.isUp() });
-
-    return execute(_connection, sqlText);
-};
