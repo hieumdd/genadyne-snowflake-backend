@@ -7,13 +7,13 @@ export const parseRequest = (req: Request): Options => ({
     page: parseInt(<string>req.query.page || '0'),
     start: <string>req.query.start,
     end: <string>req.query.end,
-    patientName: `'${req.query.patientName}'`,
+    patientName: decodeURI(<string>req.query.patientName),
 });
 
 const PatientSessionController: Handler = async (req, res) => {
     const options = parseRequest(req);
 
-    return PatientSessionService(req.snowflake, options)
+    PatientSessionService(req.snowflake, options)
         .then((data) => res.json({ data }))
         .catch((err) => res.status(500).json({ error: err.message }));
 };
