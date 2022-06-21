@@ -7,7 +7,9 @@ export const parseRequest = (req: Request): Options => ({
     page: parseInt(<string>req.query.page || '0'),
     start: <string>req.query.start,
     end: <string>req.query.end,
-    patientName: decodeURI(<string>req.query.patientName),
+    patientName: req.query.patientName
+        ? decodeURI(<string>req.query.patientName)
+        : undefined,
 });
 
 const PatientSessionController: Handler = async (req, res) => {
