@@ -8,8 +8,8 @@ describe('Patient Session', () => {
     let connection: Connection;
 
     const page = { count: 10, page: 0 };
-    const time = { start: '2022-01-01', end: '2023-01-01' };
-    const patientName = { patientName: 'DOLLAR CYNTHIA' };
+    const time = { start: '2020-01-01', end: '2023-01-01' };
+    const patientName = { patientName: 'LAIRD  NANCY' };
 
     beforeEach(async () => {
         connection = await connectionPromise;
