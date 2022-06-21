@@ -1,36 +1,16 @@
 import { http } from '@google-cloud/functions-framework';
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 
-import {
-    execute,
-    connectionPromise,
-} from './providers/snowflake/snowflake.repository';
-import { build } from './providers/snowflake/snowflake.service';
-import PatientSession, {
-    PatientSessionQueryOptions,
-} from './features/patient-session';
-
-const snowflake = async (req: Request, _: Response, next: NextFunction) => {
-    req.snowflake = await connectionPromise;
-    next();
-};
+import { connectionPromise } from './providers/snowflake';
+import PatientSessionController from './features/patient-session/patient-session.controller';
 
 const app = express();
 
-app.use(snowflake);
-
-app.get('/patient-session', (req: Request, res: Response) => {
-    const queryOptions: PatientSessionQueryOptions = {
-        count: parseInt(<string>req.query.count || '0'),
-        page: parseInt(<string>req.query.page || '500'),
-        start: <string>req.query.start,
-        end: <string>req.query.end,
-        patientName: `'${req.query.patientName}'`,
-    };
-
-    execute(req.snowflake, build(queryOptions, PatientSession))
-        .then((data) => res.json({ data }))
-        .catch((err) => res.status(500).json({ error: err.message }));
+app.use(async (req, res, next) => {
+    req.snowflake = await connectionPromise;
+    next();
 });
+
+app.get('/patient-session', PatientSessionController);
 
 http('main', app);
