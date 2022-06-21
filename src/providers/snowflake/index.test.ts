@@ -1,7 +1,12 @@
 import { Connection } from 'snowflake-sdk';
-import { connectionPromise, disconnect, execute } from './snowflake.repository';
+import {
+    QueryBuilder,
+    connectionPromise,
+    disconnect,
+    execute,
+} from '.';
 
-it('connect - disconnect', async () => {
+it('Connect - Disconnect', async () => {
     const connection = await connectionPromise;
 
     expect(connection.isUp()).toBe(true);
@@ -11,7 +16,7 @@ it('connect - disconnect', async () => {
     expect(connection.isUp()).toBe(false);
 });
 
-describe('repo', () => {
+describe('Execute', () => {
     let connection: Connection;
 
     beforeEach(async () => {
@@ -22,8 +27,15 @@ describe('repo', () => {
         await disconnect();
     });
 
-    it('execute', async () => {
-        const sql = 'SELECT * from "LIVE DATA".RESPIRONICS.PATIENTSESSIONS_SRC ORDER BY PATIENTID LIMIT 500 OFFSET 500';
+    it('Execute', async () => {
+        const sql = QueryBuilder.select()
+            .withSchema('LIVE DATA.RESPIRONICS')
+            .from('PATIENTSESSIONS_SRC')
+            .orderBy('PATIENTID')
+            .limit(10)
+            .offset(500)
+            .toQuery();
+
         return execute(connection, sql).then((data) =>
             expect(data).toBeTruthy(),
         );
