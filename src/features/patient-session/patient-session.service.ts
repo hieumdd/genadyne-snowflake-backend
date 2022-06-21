@@ -19,7 +19,7 @@ const PatientSessionService = (
         .from('PATIENTSESSIONS_SRC');
 
     start && end && sql.whereBetween('THERAPYDATE', [start, end]);
-    patientName && sql.andWhere('PATIENTNAME', 'LIKE', `%${patientName}%`);
+    patientName && sql.andWhere('PATIENTNAME', 'ILIKE', `%${patientName}%`);
 
     sql.orderBy('PATIENTID')
         .limit(count)
