@@ -19,16 +19,12 @@ const PatientSessionService = (
         .from('PATIENTSESSIONS_SRC');
 
     start && end && sql.whereBetween('THERAPYDATE', [start, end]);
-    patientName && sql.andWhere('PATIENTNAME', patientName);
+    patientName && sql.andWhere('PATIENTNAME', 'LIKE', `%${patientName}%`);
 
     sql.orderBy('PATIENTID')
         .limit(count)
         .offset(count * page);
-
-    const query = sql.toQuery();
-
-    query
-
+        
     return execute(connection, sql.toQuery());
 };
 
