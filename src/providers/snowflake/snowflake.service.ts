@@ -24,13 +24,16 @@ export type QueryRequest = TableQueryOptions &
     };
 
 export const build = <T extends QueryRequest>(
-    { start, end, count, page, filterClause }: T,
+    { start, end, count, page, ...props }: T,
     { tableName, sortField, dateField }: TableSchema,
 ) => {
     const fromClause = `SELECT * FROM ${tableName}`;
     const whereClause = 'WHERE 1=1';
     const timeFilterClause =
         start && end ? `AND ${dateField} BETWEEN '${start}' AND '${end}'` : '';
+    const filterClause = Object.entries(props)
+        .map(([key, value]) => `AND ${key} = ${value}`)
+        .join(' ');
     const sortClause = `ORDER BY ${sortField}`;
     const paginationClause = `LIMIT ${count} OFFSET ${page * count}`;
 

@@ -25,6 +25,7 @@ app.get('/patient-session', (req: Request, res: Response) => {
         page: parseInt(<string>req.query.page || '500'),
         start: <string>req.query.start,
         end: <string>req.query.end,
+        patientName: `'${req.query.patientName}'`,
     };
 
     execute(req.snowflake, build(queryOptions, PatientSession))
