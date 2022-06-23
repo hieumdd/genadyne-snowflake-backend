@@ -1,19 +1,19 @@
 import { Connection } from 'snowflake-sdk';
 
-import { connection, connect } from '../../providers/snowflake';
+import { getConnection } from '../../providers/snowflake';
 import PatientService from './patient.service';
 
 import cases from './patient.config.test';
 
 describe('Query', () => {
-    let conn: Connection;
+    let connection: Connection;
 
     beforeEach(async () => {
-        conn = connection.isUp() ? connection : await connect();
+        connection = await getConnection();
     });
 
     it.each(cases)('$name', async ({ options }) => {
-        return PatientService(conn, options).then((data) => {
+        return PatientService(connection, options).then((data) => {
             console.log(data);
             expect(data).toBeTruthy();
         });

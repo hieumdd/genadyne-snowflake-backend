@@ -24,6 +24,9 @@ export const disconnect = (): Promise<Connection> =>
         connection.destroy((err, conn) => (err ? reject(err) : resolve(conn)));
     });
 
+export const getConnection = () =>
+    connection.isUp() ? Promise.resolve(connection) : connect();
+
 type Execute = (connection: Connection, sqlText: string) => Promise<Data[]>;
 
 export const execute: Execute = (connection, sqlText) =>
