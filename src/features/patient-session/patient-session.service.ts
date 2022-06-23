@@ -1,6 +1,6 @@
 import { Connection } from 'snowflake-sdk';
 
-import { QueryBuilder, execute } from '../../providers/snowflake';
+import { Snowflake, execute } from '../../providers/snowflake';
 
 export type Options = {
     count: number;
@@ -14,7 +14,7 @@ const PatientSessionService = (
     connection: Connection,
     { count, page, start, end, patientName }: Options,
 ) => {
-    const sql = QueryBuilder.select()
+    const sql = Snowflake.select()
         .withSchema('LIVE DATA.RESPIRONICS')
         .from('PATIENTSESSIONS_SRC');
 
@@ -24,7 +24,7 @@ const PatientSessionService = (
     sql.orderBy('PATIENTID')
         .limit(count)
         .offset(count * page);
-        
+
     return execute(connection, sql.toQuery());
 };
 

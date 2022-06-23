@@ -1,10 +1,5 @@
 import { Connection } from 'snowflake-sdk';
-import {
-    QueryBuilder,
-    connectionPromise,
-    disconnect,
-    execute,
-} from '.';
+import { Snowflake, connectionPromise, disconnect, execute } from '.';
 
 it('Connect - Disconnect', async () => {
     const connection = await connectionPromise;
@@ -28,7 +23,7 @@ describe('Execute', () => {
     });
 
     it('Execute', async () => {
-        const sql = QueryBuilder.select()
+        const sql = Snowflake.select()
             .withSchema('LIVE DATA.RESPIRONICS')
             .from('PATIENTSESSIONS_SRC')
             .orderBy('PATIENTID')

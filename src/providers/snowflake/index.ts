@@ -5,7 +5,7 @@ export type Data = {
     [key: string]: any;
 };
 
-export const QueryBuilder = knex({ client: 'pg' });
+export const Snowflake = knex({ client: 'pg' });
 
 export const connection = snowflake.createConnection({
     account: 'twa58413.us-east-1',
