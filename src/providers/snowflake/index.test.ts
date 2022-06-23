@@ -1,8 +1,8 @@
 import { Connection } from 'snowflake-sdk';
-import { Snowflake, connectionPromise, disconnect, execute } from '.';
+import { Snowflake, disconnect, execute, connect } from '.';
 
 it('Connect - Disconnect', async () => {
-    const connection = await connectionPromise;
+    const connection = await connect();
 
     expect(connection.isUp()).toBe(true);
 
@@ -15,7 +15,7 @@ describe('Execute', () => {
     let connection: Connection;
 
     beforeEach(async () => {
-        connection = await connectionPromise;
+        connection = await connect();
     });
 
     afterEach(async () => {

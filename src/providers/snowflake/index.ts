@@ -19,8 +19,6 @@ export const connect = (): Promise<Connection> =>
         connection.connect((err, conn) => (err ? reject(err) : resolve(conn)));
     });
 
-export const connectionPromise = connect();
-
 export const disconnect = (): Promise<Connection> =>
     new Promise((resolve, reject) => {
         connection.destroy((err, conn) => (err ? reject(err) : resolve(conn)));
