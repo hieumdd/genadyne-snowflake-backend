@@ -12,9 +12,7 @@ export type Options = {
 };
 
 const PatientService = (connection: Connection, options: Options) => {
-    const query = PatientRepository(options)
-        .orderBy(['patientId', 'blockStart'])
-        .toQuery();
+    const query = PatientRepository(options).toQuery();
 
     return execute(connection, query);
 };

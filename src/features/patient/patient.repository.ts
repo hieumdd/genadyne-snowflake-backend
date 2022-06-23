@@ -10,8 +10,6 @@ export type Options = {
     patientName?: string;
 };
 
-type WithClause = (qb: Knex.QueryBuilder) => Knex.QueryBuilder;
-
 export const PatientRepository = ({
     count,
     page,
@@ -19,57 +17,55 @@ export const PatientRepository = ({
     end,
     patientName,
 }: Options) => {
-    const daysPerBlock = 30;
-    const compliantHours = 60 * 60 * 4;
-    const compliantThreshold = 0.7;
-
-    const withBlock: WithClause = (qb) => {
-        const _qb = qb
-            .select({
-                patientId: 'PATIENTID',
-                patientName: 'PATIENTNAME',
-                therapyDate: 'THERAPYDATE',
-                secondsOfUse: 'SECONDSOFUSE',
-                block: Snowflake.raw(
-                    `floor(datediff('day', "THERAPYDATE", current_timestamp()) / ${daysPerBlock})`,
-                ),
-            })
-            .withSchema('LIVE DATA.RESPIRONICS')
-            .from('PATIENTSESSIONS_SRC');
-
-        start && end && _qb.whereBetween('THERAPYDATE', [start, end]);
-        patientName && _qb.andWhere('PATIENTNAME', 'ILIKE', `%${patientName}%`);
-
-        return _qb;
+    const dimensions = {
+        therapyDate: 'THERAPYDATE',
+        patientSeqKey: 'PATIENTSEQKEY',
+        patientId: 'PATIENTID',
+        patientName: 'PATIENTNAME',
+        patientFirstName: 'PATIENTFIRSTNAME',
+        patientOfficeName: 'PATIENTOFFICENAME',
+        patientDateOfBirth: 'PATIENTDATEOFBIRTH',
+        facilityPatientId: 'FACILITYPATIENTID',
+        device: 'DEVICE',
+        deviceModel: 'DEVICEMODEL',
+        pcpupin: 'PCPUPIN',
+        sleepdrupin: 'SLEEPDRUPIN',
+        therapyMode: 'THERAPYMODE',
     };
 
-    const withCompliant: WithClause = (qb) =>
-        qb
-            .select({
-                patientId: 'patientId',
-                patientName: 'patientName',
-                blockStart: Snowflake.raw(`"block" * ${daysPerBlock}`),
-                blockEnd: Snowflake.raw(`("block" + 1) * ${daysPerBlock}`),
-                compliantDays: Snowflake.raw(
-                    `count_if("secondsOfUse" > ${compliantHours})`,
-                ),
-            })
-            .from('_block')
-            .groupBy(['patientId', 'patientName', 'blockStart', 'blockEnd']);
+    const observedDays = 30;
+    const compliantSeconds = 60 * 60 * 4;
+    const compliantThreshold = 0.7;
 
-    return Snowflake.with('_block', withBlock)
-        .with('_compliant', withCompliant)
+    const withFlag = (qb: Knex.QueryBuilder) => {
+        qb.withSchema('LIVE DATA.RESPIRONICS')
+            .from('PATIENTSESSIONS_SRC')
+            .select({
+                ...dimensions,
+                flag: Snowflake.raw(
+                    `iff("SECONDSOFUSE" > ${compliantSeconds} and datediff(day, "THERAPYDATE", current_date()) < ${observedDays}, true, false)`,
+                ),
+            });
+        start && end && qb.whereBetween('THERAPYDATE', [start, end]);
+        patientName && qb.andWhere('PATIENTNAME', 'ILIKE', `%${patientName}%`);
+
+        return qb;
+    };
+
+    return Snowflake.with('flag', withFlag)
+        .from('flag')
         .select({
-            patientId: 'patientId',
-            patientName: 'patientName',
-            blockRange: Snowflake.raw(
-                `concat(cast("blockStart" as string), ' - ', cast("blockEnd" as string))`,
-            ),
-            isCompliant: Snowflake.raw(
-                `IFF("compliantDays" / ${daysPerBlock} > ${compliantThreshold}, TRUE, FALSE)`,
+            ...Object.keys(dimensions)
+                .map((dimension) => ({ [dimension]: dimension }))
+                .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+            compliant: Snowflake.raw(
+                `iff(count_if("flag" = true) over (partition by "patientId") / ${observedDays} > ${compliantThreshold}, true, false)`,
             ),
         })
-        .from('_compliant')
+        .orderBy([
+            { column: 'patientId', order: 'desc' },
+            { column: 'therapyDate', order: 'desc' },
+        ])
         .limit(count)
         .offset(count * page);
 };
