@@ -50,7 +50,9 @@ export const PatientRepository = ({
                 patientName: 'patientName',
                 blockStart: Snowflake.raw(`"block" * ${daysPerBlock}`),
                 blockEnd: Snowflake.raw(`("block" + 1) * ${daysPerBlock}`),
-                compliantDays: Snowflake.raw(`${compliantHours})`),
+                compliantDays: Snowflake.raw(
+                    `count_if("secondsOfUse" > ${compliantHours})`,
+                ),
             })
             .from('_block')
             .groupBy(['patientId', 'patientName', 'blockStart', 'blockEnd']);
