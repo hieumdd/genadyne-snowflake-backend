@@ -1,8 +1,9 @@
 import { Handler, Request } from 'express';
 
-import PatientSessionService, { Options } from './patient.service';
+import { Options } from './patient.repository';
+import PatientSessionService from './patient.service';
 
-export const parseRequest = (req: Request): Options => ({
+const parseRequest = (req: Request): Options => ({
     count: parseInt(<string>req.query.count || '500'),
     page: parseInt(<string>req.query.page || '0'),
     start: <string>req.query.start,

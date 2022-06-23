@@ -10,7 +10,7 @@ export type Options = {
     patientName?: string;
 };
 
-export const PatientRepository = ({
+const PatientRepository = ({
     count,
     page,
     start,
