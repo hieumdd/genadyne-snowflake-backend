@@ -37,7 +37,14 @@ patientController.get('/count/all', async (req, res) => {
 patientController.get('/count/by-compliant', async (req, res) => {
     req.patientService
         .getCountByCompliant()
-        .then((data) => res.json({ data: data.pop() }))
+        .then((data) => res.json({ data }))
+        .catch((err) => res.status(500).json({ error: err.message }));
+});
+
+patientController.get('/count/by-age', async (req, res) => {
+    req.patientService
+        .getCountByAge()
+        .then((data) => res.json({ data }))
         .catch((err) => res.status(500).json({ error: err.message }));
 });
 

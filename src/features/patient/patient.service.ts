@@ -44,6 +44,16 @@ class PatientService {
 
         return execute(this.connection, query);
     }
+
+    getCountByAge() {
+        const query = PatientRepository(this.options)
+            .select(['over65'])
+            .count('patientSeqKey', { as: 'count' })
+            .groupBy(['over65'])
+            .toQuery();
+
+        return execute(this.connection, query);
+    }
 }
 
 export default PatientService;

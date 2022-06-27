@@ -47,16 +47,17 @@ const PatientRepository = ({ start, end, patientName }: Options) => {
     };
 
     const withPatient = (qb: Knex.QueryBuilder) =>
-        qb
-            .from('flag')
-            .select({
-                ...Object.keys(dimensions)
-                    .map((dimension) => ({ [dimension]: dimension }))
-                    .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
-                compliant: Snowflake.raw(
-                    `iff(count_if("flag" = true) over (partition by "patientId") / ${observedDays} > ${compliantThreshold}, true, false)`,
-                ),
-            });
+        qb.from('flag').select({
+            ...Object.keys(dimensions)
+                .map((dimension) => ({ [dimension]: dimension }))
+                .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+            over65: Snowflake.raw(
+                `iff(datediff(year, "patientDateOfBirth", current_date()) > 65, true, false)`,
+            ),
+            compliant: Snowflake.raw(
+                `iff(count_if("flag" = true) over (partition by "patientId") / ${observedDays} > ${compliantThreshold}, true, false)`,
+            ),
+        });
 
     return Snowflake.with('flag', withFlag)
         .with('patient', withPatient)

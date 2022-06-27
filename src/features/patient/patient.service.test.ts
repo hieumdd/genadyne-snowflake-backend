@@ -34,4 +34,12 @@ describe('Query', () => {
             expect(data).toBeTruthy();
         });
     });
+
+    it('Count By Age', async () => {
+        const patientService = new PatientService(connection, cases[1].options);
+        return patientService.getCountByAge().then((data) => {
+            console.log(data);
+            expect(data).toBeTruthy();
+        });
+    });
 });
