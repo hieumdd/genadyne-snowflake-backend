@@ -11,4 +11,4 @@ const cases: { name: string; options: Options }[] = [
     { name: 'Query w/ Patient Name', options: { ...page, ...patientName } },
 ];
 
-export default cases
+export default cases;

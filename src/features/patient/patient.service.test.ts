@@ -1,9 +1,8 @@
-import { Connection } from 'snowflake-sdk';
-
 import { getConnection } from '../../providers/snowflake';
 import PatientService from './patient.service';
 
 import cases from './patient.config.test';
+import { Connection } from 'snowflake-sdk';
 
 describe('Query', () => {
     let connection: Connection;
@@ -13,7 +12,16 @@ describe('Query', () => {
     });
 
     it.each(cases)('$name', async ({ options }) => {
-        return PatientService(connection, options).then((data) => {
+        const patientService = new PatientService(connection, options);
+        return patientService.getAll().then((data) => {
+            console.log(data);
+            expect(data).toBeTruthy();
+        });
+    });
+
+    it('Count', async () => {
+        const patientService = new PatientService(connection, cases[1].options);
+        return patientService.getCount().then((data) => {
             console.log(data);
             expect(data).toBeTruthy();
         });

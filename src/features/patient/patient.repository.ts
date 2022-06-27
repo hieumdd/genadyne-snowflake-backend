@@ -3,20 +3,14 @@ import { Knex } from 'knex';
 import { Snowflake } from '../../providers/snowflake';
 
 export type Options = {
-    count: number;
-    page: number;
     start?: string;
     end?: string;
     patientName?: string;
+    count: number;
+    page: number;
 };
 
-const PatientRepository = ({
-    count,
-    page,
-    start,
-    end,
-    patientName,
-}: Options) => {
+const PatientRepository = ({ start, end, patientName }: Options) => {
     const dimensions = {
         therapyDate: 'THERAPYDATE',
         patientSeqKey: 'PATIENTSEQKEY',
@@ -31,19 +25,23 @@ const PatientRepository = ({
         pcpupin: 'PCPUPIN',
         sleepdrupin: 'SLEEPDRUPIN',
         therapyMode: 'THERAPYMODE',
+        secondsOfUse: 'SECONDSOFUSE',
     };
-
-    const observedDays = 30;
-    const compliantSeconds = 60 * 60 * 4;
-    const compliantThreshold = 0.7;
 
     const withFlag = (qb: Knex.QueryBuilder) => {
         qb.withSchema('LIVE DATA.RESPIRONICS')
             .from('PATIENTSESSIONS_SRC')
             .select({
                 ...dimensions,
-                flag: Snowflake.raw(
-                    `iff("SECONDSOFUSE" > ${compliantSeconds} and datediff(day, "THERAPYDATE", current_date()) < ${observedDays}, true, false)`,
+                rolling30DaysUsage: Snowflake.raw(
+                    `sum(
+                        iff("SECONDSOFUSE" > 0, 1, 0)
+                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`
+                ),
+                rolling30Days4hrsUsage: Snowflake.raw(
+                    `sum(
+                        iff("SECONDSOFUSE" > 60 * 60 * 4, 1, 0)
+                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`
                 ),
             });
         start && end && qb.whereBetween('THERAPYDATE', [start, end]);
@@ -52,22 +50,46 @@ const PatientRepository = ({
         return qb;
     };
 
-    return Snowflake.with('flag', withFlag)
-        .from('flag')
-        .select({
+    const withPatient = (qb: Knex.QueryBuilder) =>
+        qb.from('flag').select({
             ...Object.keys(dimensions)
                 .map((dimension) => ({ [dimension]: dimension }))
                 .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
-            compliant: Snowflake.raw(
-                `iff(count_if("flag" = true) over (partition by "patientId") / ${observedDays} > ${compliantThreshold}, true, false)`,
+            rolling30DaysUsage: 'rolling30DaysUsage',
+            rolling30Days4hrsUsage: 'rolling30Days4hrsUsage',
+            therapyModeGroup: Snowflake.raw(
+                `case
+                    when
+                        "therapyMode" ilike '%ST%'
+                        or "therapyMode" ilike '%ASV%'
+                        or "therapyMode" ilike '%AVAPS%'
+                        or "therapyMode" ilike '%S%'
+                        or "therapyMode" ilike '%S/T%'
+                    then 'RAD'
+                    when
+                        "therapyMode" ilike '%CPAP%'
+                    then 'CPAP'
+                    when
+                        "therapyMode" ilike '%Bi-Level%'
+                        or "therapyMode" ilike '%BiLevel%'
+                        then 'Bi-Level'
+                else 'Other' end`,
             ),
-        })
-        .orderBy([
-            { column: 'patientId', order: 'desc' },
-            { column: 'therapyDate', order: 'desc' },
-        ])
-        .limit(count)
-        .offset(count * page);
+            over65: Snowflake.raw(
+                `iff(datediff(year, "patientDateOfBirth", current_date()) > 65, true, false)`,
+            ),
+            compliant: Snowflake.raw(
+                `iff(
+                    "rolling30DaysUsage" > 30 and div0("rolling30DaysUsage", "rolling30Days4hrsUsage") > 0.7,
+                    true,
+                    false
+                )`,
+            ),
+        });
+
+    return Snowflake.with('flag', withFlag)
+        .with('patient', withPatient)
+        .from('patient');
 };
 
 export default PatientRepository;

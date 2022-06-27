@@ -3,10 +3,39 @@ import { Connection } from 'snowflake-sdk';
 import { execute } from '../../providers/snowflake';
 import PatientRepository, { Options } from './patient.repository';
 
-const PatientService = (connection: Connection, options: Options) => {
-    const query = PatientRepository(options).toQuery();
+class PatientService {
+    connection: Connection;
+    options: Options;
 
-    return execute(connection, query);
-};
+    constructor(connection: Connection, options: Options) {
+        this.connection = connection;
+        this.options = options;
+    }
+
+    getAll() {
+        const { count, page } = this.options;
+
+        const query = PatientRepository(this.options)
+            .orderBy([
+                { column: 'patientId', order: 'desc' },
+                { column: 'therapyDate', order: 'desc' },
+            ])
+            .limit(count)
+            .offset(count * page)
+            .toQuery();
+
+        return execute(this.connection, query);
+    }
+
+    getCount() {
+        const query = PatientRepository(this.options)
+            .select(['compliant', 'therapyModeGroup', 'over65'])
+            .count('patientSeqKey', { as: 'count' })
+            .groupBy(['compliant', 'therapyModeGroup', 'over65'])
+            .toQuery();
+
+        return execute(this.connection, query);
+    }
+}
 
 export default PatientService;
