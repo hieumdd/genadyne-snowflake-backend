@@ -20,17 +20,18 @@ patientController.use((req, res, next) => {
     next();
 });
 
+
 patientController.get('/', async (req, res) => {
     req.patientService
-        .getAll()
-        .then((data) => res.json({ data }))
-        .catch((err) => res.status(500).json({ error: err.message }));
+    .getAll()
+    .then((data) => res.json({ data }))
+    .catch((err) => res.status(500).json({ error: err.message }));
 });
 
 patientController.get('/summary', async (req, res) => {
     req.patientService
         .getCount()
-        .then((data) => res.json({ data: data.pop() }))
+        .then((data) => res.json({ data }))
         .catch((err) => res.status(500).json({ error: err.message }));
 });
 
