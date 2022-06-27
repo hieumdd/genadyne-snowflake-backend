@@ -27,24 +27,10 @@ patientController.get('/', async (req, res) => {
         .catch((err) => res.status(500).json({ error: err.message }));
 });
 
-patientController.get('/count/all', async (req, res) => {
+patientController.get('/summary', async (req, res) => {
     req.patientService
         .getCount()
         .then((data) => res.json({ data: data.pop() }))
-        .catch((err) => res.status(500).json({ error: err.message }));
-});
-
-patientController.get('/count/by-compliant', async (req, res) => {
-    req.patientService
-        .getCountByCompliant()
-        .then((data) => res.json({ data }))
-        .catch((err) => res.status(500).json({ error: err.message }));
-});
-
-patientController.get('/count/by-age', async (req, res) => {
-    req.patientService
-        .getCountByAge()
-        .then((data) => res.json({ data }))
         .catch((err) => res.status(500).json({ error: err.message }));
 });
 

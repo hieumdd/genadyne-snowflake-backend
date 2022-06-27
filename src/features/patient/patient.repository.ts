@@ -51,6 +51,13 @@ const PatientRepository = ({ start, end, patientName }: Options) => {
             ...Object.keys(dimensions)
                 .map((dimension) => ({ [dimension]: dimension }))
                 .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+            therapyModeGroup: Snowflake.raw(
+                `case
+                    when "therapyMode" ilike '%ST%' OR "therapyMode" ilike '%ASV%' OR "therapyMode" ilike '%AVAPS%'  or "therapyMode" ilike '%S%' or "therapyMode" ilike '%S/T%' then 'RAD'
+                    when "therapyMode" ilike '%CPAP%' then 'CPAP'
+                    when "therapyMode" ilike '%Bi-Level%' or "therapyMode" ilike '%BiLevel%' then 'Bi-Level'
+                else 'Other' end`,
+            ),
             over65: Snowflake.raw(
                 `iff(datediff(year, "patientDateOfBirth", current_date()) > 65, true, false)`,
             ),

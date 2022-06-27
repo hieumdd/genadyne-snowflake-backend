@@ -29,27 +29,9 @@ class PatientService {
 
     getCount() {
         const query = PatientRepository(this.options)
+            .select(['compliant', 'therapyModeGroup', 'over65'])
             .count('patientSeqKey', { as: 'count' })
-            .toQuery();
-
-        return execute(this.connection, query);
-    }
-
-    getCountByCompliant() {
-        const query = PatientRepository(this.options)
-            .select(['compliant'])
-            .count('patientSeqKey', { as: 'count' })
-            .groupBy(['compliant'])
-            .toQuery();
-
-        return execute(this.connection, query);
-    }
-
-    getCountByAge() {
-        const query = PatientRepository(this.options)
-            .select(['over65'])
-            .count('patientSeqKey', { as: 'count' })
-            .groupBy(['over65'])
+            .groupBy(['compliant', 'therapyModeGroup', 'over65'])
             .toQuery();
 
         return execute(this.connection, query);
