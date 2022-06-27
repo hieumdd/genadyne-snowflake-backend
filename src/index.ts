@@ -26,6 +26,6 @@ app.use((req, res, next) => {
 });
 
 app.get('/patient-session', PatientSessionController);
-app.get('/patient', patientController);
+app.use('/patient', patientController);
 
 http('main', app);
