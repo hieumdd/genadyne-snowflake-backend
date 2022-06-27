@@ -6,6 +6,8 @@ export type Options = {
     start?: string;
     end?: string;
     patientName?: string;
+    count: number;
+    page: number;
 };
 
 const PatientRepository = ({ start, end, patientName }: Options) => {
@@ -54,11 +56,7 @@ const PatientRepository = ({ start, end, patientName }: Options) => {
                 compliant: Snowflake.raw(
                     `iff(count_if("flag" = true) over (partition by "patientId") / ${observedDays} > ${compliantThreshold}, true, false)`,
                 ),
-            })
-            .orderBy([
-                { column: 'patientId', order: 'desc' },
-                { column: 'therapyDate', order: 'desc' },
-            ]);
+            });
 
     return Snowflake.with('flag', withFlag)
         .with('patient', withPatient)

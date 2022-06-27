@@ -1,20 +1,25 @@
-import knex from 'knex';
 import { Connection } from 'snowflake-sdk';
 
-import { execute, Snowflake } from '../../providers/snowflake';
+import { execute } from '../../providers/snowflake';
 import PatientRepository, { Options } from './patient.repository';
 
 class PatientService {
     connection: Connection;
+    options: Options;
 
-    constructor(connection: Connection) {
+    constructor(connection: Connection, options: Options) {
         this.connection = connection;
+        this.options = options;
     }
 
-    getAll(options: Options & { count: number; page: number }) {
-        const { count, page } = options;
+    getAll() {
+        const { count, page } = this.options;
 
-        const query = PatientRepository(options)
+        const query = PatientRepository(this.options)
+            .orderBy([
+                { column: 'patientId', order: 'desc' },
+                { column: 'therapyDate', order: 'desc' },
+            ])
             .limit(count)
             .offset(count * page)
             .toQuery();
@@ -22,8 +27,16 @@ class PatientService {
         return execute(this.connection, query);
     }
 
-    getByCompliant() {
-        const query = PatientRepository({})
+    getCount() {
+        const query = PatientRepository(this.options)
+            .count('patientSeqKey', { as: 'count' })
+            .toQuery();
+
+        return execute(this.connection, query);
+    }
+
+    getCountByCompliant() {
+        const query = PatientRepository(this.options)
             .select(['compliant'])
             .count('patientSeqKey', { as: 'count' })
             .groupBy(['compliant'])

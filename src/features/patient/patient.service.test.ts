@@ -2,26 +2,34 @@ import { getConnection } from '../../providers/snowflake';
 import PatientService from './patient.service';
 
 import cases from './patient.config.test';
+import { Connection } from 'snowflake-sdk';
 
 describe('Query', () => {
-    let patientService: PatientService;
+    let connection: Connection;
 
     beforeEach(async () => {
-        const connection = await getConnection();
-        patientService = new PatientService(connection);
+        connection = await getConnection();
     });
 
     it.each(cases)('$name', async ({ options }) => {
-        return patientService
-            .getAll({ ...options, count: 10, page: 0 })
-            .then((data) => {
-                console.log(data);
-                expect(data).toBeTruthy();
-            });
+        const patientService = new PatientService(connection, options);
+        return patientService.getAll().then((data) => {
+            console.log(data);
+            expect(data).toBeTruthy();
+        });
     });
 
-    it('By Compliant', () => {
-        return patientService.getByCompliant().then((data) => {
+    it('Count', async () => {
+        const patientService = new PatientService(connection, cases[1].options);
+        return patientService.getCount().then((data) => {
+            console.log(data);
+            expect(data).toBeTruthy();
+        });
+    });
+
+    it('Count By Compliant', async () => {
+        const patientService = new PatientService(connection, cases[1].options);
+        return patientService.getCountByCompliant().then((data) => {
             console.log(data);
             expect(data).toBeTruthy();
         });
