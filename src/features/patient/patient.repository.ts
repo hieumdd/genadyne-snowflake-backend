@@ -3,20 +3,12 @@ import { Knex } from 'knex';
 import { Snowflake } from '../../providers/snowflake';
 
 export type Options = {
-    count: number;
-    page: number;
     start?: string;
     end?: string;
     patientName?: string;
 };
 
-const PatientRepository = ({
-    count,
-    page,
-    start,
-    end,
-    patientName,
-}: Options) => {
+const PatientRepository = ({ start, end, patientName }: Options) => {
     const dimensions = {
         therapyDate: 'THERAPYDATE',
         patientSeqKey: 'PATIENTSEQKEY',
@@ -52,22 +44,25 @@ const PatientRepository = ({
         return qb;
     };
 
+    const withPatient = (qb: Knex.QueryBuilder) =>
+        qb
+            .from('flag')
+            .select({
+                ...Object.keys(dimensions)
+                    .map((dimension) => ({ [dimension]: dimension }))
+                    .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+                compliant: Snowflake.raw(
+                    `iff(count_if("flag" = true) over (partition by "patientId") / ${observedDays} > ${compliantThreshold}, true, false)`,
+                ),
+            })
+            .orderBy([
+                { column: 'patientId', order: 'desc' },
+                { column: 'therapyDate', order: 'desc' },
+            ]);
+
     return Snowflake.with('flag', withFlag)
-        .from('flag')
-        .select({
-            ...Object.keys(dimensions)
-                .map((dimension) => ({ [dimension]: dimension }))
-                .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
-            compliant: Snowflake.raw(
-                `iff(count_if("flag" = true) over (partition by "patientId") / ${observedDays} > ${compliantThreshold}, true, false)`,
-            ),
-        })
-        .orderBy([
-            { column: 'patientId', order: 'desc' },
-            { column: 'therapyDate', order: 'desc' },
-        ])
-        .limit(count)
-        .offset(count * page);
+        .with('patient', withPatient)
+        .from('patient');
 };
 
 export default PatientRepository;

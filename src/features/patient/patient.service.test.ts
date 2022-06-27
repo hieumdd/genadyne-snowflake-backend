@@ -1,19 +1,27 @@
-import { Connection } from 'snowflake-sdk';
-
 import { getConnection } from '../../providers/snowflake';
 import PatientService from './patient.service';
 
 import cases from './patient.config.test';
 
 describe('Query', () => {
-    let connection: Connection;
+    let patientService: PatientService;
 
     beforeEach(async () => {
-        connection = await getConnection();
+        const connection = await getConnection();
+        patientService = new PatientService(connection);
     });
 
     it.each(cases)('$name', async ({ options }) => {
-        return PatientService(connection, options).then((data) => {
+        return patientService
+            .getAll({ ...options, count: 10, page: 0 })
+            .then((data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            });
+    });
+
+    it('By Compliant', () => {
+        return patientService.getByCompliant().then((data) => {
             console.log(data);
             expect(data).toBeTruthy();
         });
