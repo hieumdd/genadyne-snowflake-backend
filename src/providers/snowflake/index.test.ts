@@ -1,13 +1,8 @@
 import { Connection } from 'snowflake-sdk';
-import {
-    QueryBuilder,
-    connectionPromise,
-    disconnect,
-    execute,
-} from '.';
+import { Snowflake, disconnect, execute, connect } from '.';
 
 it('Connect - Disconnect', async () => {
-    const connection = await connectionPromise;
+    const connection = await connect();
 
     expect(connection.isUp()).toBe(true);
 
@@ -20,7 +15,7 @@ describe('Execute', () => {
     let connection: Connection;
 
     beforeEach(async () => {
-        connection = await connectionPromise;
+        connection = await connect();
     });
 
     afterEach(async () => {
@@ -28,7 +23,7 @@ describe('Execute', () => {
     });
 
     it('Execute', async () => {
-        const sql = QueryBuilder.select()
+        const sql = Snowflake.select()
             .withSchema('LIVE DATA.RESPIRONICS')
             .from('PATIENTSESSIONS_SRC')
             .orderBy('PATIENTID')

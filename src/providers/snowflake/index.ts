@@ -5,7 +5,7 @@ export type Data = {
     [key: string]: any;
 };
 
-export const QueryBuilder = knex({ client: 'pg' });
+export const Snowflake = knex({ client: 'pg' });
 
 export const connection = snowflake.createConnection({
     account: 'twa58413.us-east-1',
@@ -19,12 +19,13 @@ export const connect = (): Promise<Connection> =>
         connection.connect((err, conn) => (err ? reject(err) : resolve(conn)));
     });
 
-export const connectionPromise = connect();
-
 export const disconnect = (): Promise<Connection> =>
     new Promise((resolve, reject) => {
         connection.destroy((err, conn) => (err ? reject(err) : resolve(conn)));
     });
+
+export const getConnection = () =>
+    connection.isUp() ? Promise.resolve(connection) : connect();
 
 type Execute = (connection: Connection, sqlText: string) => Promise<Data[]>;
 

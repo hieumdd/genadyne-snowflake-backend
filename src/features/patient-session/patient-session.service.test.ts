@@ -2,7 +2,7 @@ import { Connection } from 'snowflake-sdk';
 
 import PatientSessionService, { Options } from './patient-session.service';
 
-import { connectionPromise, disconnect } from '../../providers/snowflake';
+import { connect, disconnect } from '../../providers/snowflake';
 
 describe('Patient Session', () => {
     let connection: Connection;
@@ -12,7 +12,7 @@ describe('Patient Session', () => {
     const patientName = { patientName: 'LAIRD  NANCY' };
 
     beforeEach(async () => {
-        connection = await connectionPromise;
+        connection = await connect();
     });
 
     afterAll(async () => {
