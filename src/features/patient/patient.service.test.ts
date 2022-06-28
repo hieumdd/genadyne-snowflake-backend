@@ -1,5 +1,5 @@
 import { getConnection } from '../../providers/snowflake';
-import PatientService from './patient.service';
+import * as PatientService from './patient.service';
 
 import cases from './patient.config.test';
 import { Connection } from 'snowflake-sdk';
@@ -11,19 +11,52 @@ describe('Query', () => {
         connection = await getConnection();
     });
 
-    it.each(cases)('$name', async ({ options }) => {
-        const patientService = new PatientService(connection, options);
-        return patientService.getAll().then((data) => {
+    // it.each(cases)('$name', async ({ options }) => {
+    //     return PatientService.getAll(connection, options).then((data) => {
+    //         console.log(data);
+    //         expect(data).toBeTruthy();
+    //     });
+    // });
+
+    it('Count', async () => {
+        return PatientService.getCount(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
+        );
+    });
+    it('Count by Start of Month', async () => {
+        return PatientService.getCountByStartOfMonth(
+            connection,
+            cases[1].options,
+        ).then((data) => {
             console.log(data);
             expect(data).toBeTruthy();
         });
     });
-
-    it('Count', async () => {
-        const patientService = new PatientService(connection, cases[1].options);
-        return patientService.getCount().then((data) => {
-            console.log(data);
-            expect(data).toBeTruthy();
-        });
+    it('Count by Compliant', async () => {
+        return PatientService.getCountByCompliant(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
+        );
+    });
+    it('Count By Therapy Mode Group', async () => {
+        return PatientService.getCountByTherapyModeGroup(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
+        );
+    });
+    it('Count By Age', async () => {
+        return PatientService.getCountByAge(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
+        );
     });
 });
