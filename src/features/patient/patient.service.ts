@@ -29,9 +29,14 @@ class PatientService {
 
     getCount() {
         const query = PatientRepository(this.options)
-            .select(['compliant', 'therapyModeGroup', 'over65'])
+            .select(['startOfMonth', 'compliant', 'therapyModeGroup', 'over65'])
             .count('patientSeqKey', { as: 'count' })
-            .groupBy(['compliant', 'therapyModeGroup', 'over65'])
+            .groupBy([
+                'startOfMonth',
+                'compliant',
+                'therapyModeGroup',
+                'over65',
+            ])
             .toQuery();
 
         return execute(this.connection, query);
