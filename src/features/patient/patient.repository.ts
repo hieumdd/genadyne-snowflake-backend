@@ -57,6 +57,9 @@ const PatientRepository = ({ start, end, patientName }: Options) => {
                 .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
             rolling30DaysUsage: 'rolling30DaysUsage',
             rolling30Days4hrsUsage: 'rolling30Days4hrsUsage',
+            startOfMonth: Snowflake.raw(
+                `date_trunc('month', "therapyDate")`
+            ),
             therapyModeGroup: Snowflake.raw(
                 `case
                     when

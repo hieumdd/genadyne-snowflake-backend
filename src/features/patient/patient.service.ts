@@ -1,41 +1,55 @@
+import { Knex } from 'knex';
 import { Connection } from 'snowflake-sdk';
 
-import { execute } from '../../providers/snowflake';
+import { execute, Data } from '../../providers/snowflake';
 import PatientRepository, { Options } from './patient.repository';
 
-class PatientService {
-    connection: Connection;
-    options: Options;
+export type Service = (conn: Connection, options: Options) => Promise<Data[]>;
 
-    constructor(connection: Connection, options: Options) {
-        this.connection = connection;
-        this.options = options;
-    }
+const getService =
+    (queryFn: (options: Options) => Knex.QueryBuilder): Service =>
+    (conn, options) =>
+        execute(conn, queryFn(options).toQuery());
 
-    getAll() {
-        const { count, page } = this.options;
+const getCountService = (columns?: string[]) =>
+    getService((options) => {
+        const count = PatientRepository(options).count('patientSeqKey', {
+            as: 'count',
+        });
 
-        const query = PatientRepository(this.options)
-            .orderBy([
-                { column: 'patientId', order: 'desc' },
-                { column: 'therapyDate', order: 'desc' },
-            ])
-            .limit(count)
-            .offset(count * page)
-            .toQuery();
+        columns && count.select(columns).groupBy(columns);
 
-        return execute(this.connection, query);
-    }
+        return count;
+    });
 
-    getCount() {
-        const query = PatientRepository(this.options)
-            .select(['compliant', 'therapyModeGroup', 'over65'])
-            .count('patientSeqKey', { as: 'count' })
-            .groupBy(['compliant', 'therapyModeGroup', 'over65'])
-            .toQuery();
+const getCountQueryFn = (columns?: string[]) => (options: Options) => {
+    const count = PatientRepository(options).count('patientSeqKey', {
+        as: 'count',
+    });
 
-        return execute(this.connection, query);
-    }
-}
+    columns && count.select(columns).groupBy(columns);
 
-export default PatientService;
+    return count;
+};
+
+export const getAll = getService((options) => {
+    const { count, page } = options;
+
+    return PatientRepository(options)
+        .orderBy([
+            { column: 'patientId', order: 'desc' },
+            { column: 'therapyDate', order: 'desc' },
+        ])
+        .limit(count)
+        .offset(count * page);
+});
+
+export const getCount = getService(getCountQueryFn());
+
+export const getCountByStartOfMonth = getCountService(['startOfMonth']);
+
+export const getCountByCompliant = getCountService(['compliant']);
+
+export const getCountByTherapyModeGroup = getCountService(['therapyModeGroup']);
+
+export const getCountByAge = getCountService(['over65']);

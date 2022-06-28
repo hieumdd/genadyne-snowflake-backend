@@ -1,11 +1,20 @@
-import { Router } from 'express';
+import { Handler, Router } from 'express';
 
-import PatientService from './patient.service';
+import * as PatientService from './patient.service';
 
 const patientController = Router();
+const patientSummaryController = Router();
+
+const getController =
+    (service: PatientService.Service): Handler =>
+    (req, res) => {
+        service(req.snowflake, req.options)
+            .then((data) => res.json({ data }))
+            .catch((err) => res.status(500).json({ error: err.message }));
+    };
 
 patientController.use((req, res, next) => {
-    const options = {
+    req.options = {
         count: parseInt(<string>req.query.count || '500'),
         page: parseInt(<string>req.query.page || '0'),
         start: <string>req.query.start,
@@ -15,24 +24,33 @@ patientController.use((req, res, next) => {
             : undefined,
     };
 
-    req.patientService = new PatientService(req.snowflake, options);
-
     next();
 });
 
+patientController.get('/', getController(PatientService.getAll));
 
-patientController.get('/', async (req, res) => {
-    req.patientService
-    .getAll()
-    .then((data) => res.json({ data }))
-    .catch((err) => res.status(500).json({ error: err.message }));
-});
+patientSummaryController.get('/', getController(PatientService.getCount));
 
-patientController.get('/summary', async (req, res) => {
-    req.patientService
-        .getCount()
-        .then((data) => res.json({ data }))
-        .catch((err) => res.status(500).json({ error: err.message }));
-});
+patientSummaryController.get(
+    '/start-of-month',
+    getController(PatientService.getCountByStartOfMonth),
+);
+
+patientSummaryController.get(
+    '/compliant',
+    getController(PatientService.getCountByCompliant),
+);
+
+patientSummaryController.get(
+    '/therapy-mode-group',
+    getController(PatientService.getCountByTherapyModeGroup),
+);
+
+patientSummaryController.get(
+    '/age',
+    getController(PatientService.getCountByAge),
+);
+
+patientController.use('/summary', patientSummaryController);
 
 export default patientController;
