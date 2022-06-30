@@ -10,7 +10,7 @@ export type Options = {
     page: number;
 };
 
-const PatientRepository = ({ start, end, patientName }: Options) => {
+const PatientSessionRepository = ({ start, end, patientName }: Options) => {
     const dimensions = {
         therapyDate: 'THERAPYDATE',
         patientSeqKey: 'PATIENTSEQKEY',
@@ -36,12 +36,12 @@ const PatientRepository = ({ start, end, patientName }: Options) => {
                 rolling30DaysUsage: Snowflake.raw(
                     `sum(
                         iff("SECONDSOFUSE" > 0, 1, 0)
-                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`
+                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`,
                 ),
                 rolling30Days4hrsUsage: Snowflake.raw(
                     `sum(
                         iff("SECONDSOFUSE" > 60 * 60 * 4, 1, 0)
-                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`
+                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`,
                 ),
             });
         start && end && qb.whereBetween('THERAPYDATE', [start, end]);
@@ -57,9 +57,7 @@ const PatientRepository = ({ start, end, patientName }: Options) => {
                 .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
             rolling30DaysUsage: 'rolling30DaysUsage',
             rolling30Days4hrsUsage: 'rolling30Days4hrsUsage',
-            startOfMonth: Snowflake.raw(
-                `date_trunc('month', "therapyDate")`
-            ),
+            startOfMonth: Snowflake.raw(`date_trunc('month', "therapyDate")`),
             therapyModeGroup: Snowflake.raw(
                 `case
                     when
@@ -95,4 +93,4 @@ const PatientRepository = ({ start, end, patientName }: Options) => {
         .from('patient');
 };
 
-export default PatientRepository;
+export default PatientSessionRepository;

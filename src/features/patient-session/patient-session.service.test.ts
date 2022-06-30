@@ -1,49 +1,62 @@
+import { getConnection } from '../../providers/snowflake';
+import * as PatientService from './patient-session.service';
+
+import cases from './patient-session.config.test';
 import { Connection } from 'snowflake-sdk';
 
-import PatientSessionService, { Options } from './patient-session.service';
-
-import { connect, disconnect } from '../../providers/snowflake';
-
-describe('Patient Session', () => {
+describe('Query', () => {
     let connection: Connection;
 
-    const page = { count: 10, page: 0 };
-    const time = { start: '2020-01-01', end: '2023-01-01' };
-    const patientName = { patientName: 'LAIRD  NANCY' };
-
     beforeEach(async () => {
-        connection = await connect();
+        connection = await getConnection();
     });
 
-    afterAll(async () => {
-        await disconnect();
-    });
+    // it.each(cases)('$name', async ({ options }) => {
+    //     return PatientService.getAll(connection, options).then((data) => {
+    //         console.log(data);
+    //         expect(data).toBeTruthy();
+    //     });
+    // });
 
-    it('Query', async () => {
-        const options: Options = { ...page };
-        return PatientSessionService(connection, options).then((data) =>
-            expect(data).toBeTruthy(),
+    it('Count', async () => {
+        return PatientService.getCount(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
         );
     });
-
-    it('Query w/ Date', async () => {
-        const options: Options = { ...page, ...time };
-        return PatientSessionService(connection, options).then((data) =>
-            expect(data).toBeTruthy(),
+    it('Count by Start of Month', async () => {
+        return PatientService.getCountByStartOfMonth(
+            connection,
+            cases[1].options,
+        ).then((data) => {
+            console.log(data);
+            expect(data).toBeTruthy();
+        });
+    });
+    it('Count by Compliant', async () => {
+        return PatientService.getCountByCompliant(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
         );
     });
-
-    it('Query w/ Patient Name', async () => {
-        const options: Options = { ...page, ...patientName };
-        return PatientSessionService(connection, options).then((data) =>
-            expect(data).toBeTruthy(),
+    it('Count By Therapy Mode Group', async () => {
+        return PatientService.getCountByTherapyModeGroup(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
         );
     });
-
-    it('Query w/ Date & Patient Name', async () => {
-        const options: Options = { ...page, ...time, ...patientName };
-        return PatientSessionService(connection, options).then((data) =>
-            expect(data).toBeTruthy(),
+    it('Count By Age', async () => {
+        return PatientService.getCountByAge(connection, cases[1].options).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
         );
     });
 });

@@ -1,31 +1,57 @@
+import { Knex } from 'knex';
 import { Connection } from 'snowflake-sdk';
 
-import { Snowflake, execute } from '../../providers/snowflake';
+import { execute, Data } from '../../providers/snowflake';
+import PatientSessionRepository, {
+    Options,
+} from './patient-session.repository';
 
-export type Options = {
-    count: number;
-    page: number;
-    start?: string;
-    end?: string;
-    patientName?: string;
+export type Service = (conn: Connection, options: Options) => Promise<Data[]>;
+
+const getService =
+    (queryFn: (options: Options) => Knex.QueryBuilder): Service =>
+    (conn, options) =>
+        execute(conn, queryFn(options).toQuery());
+
+const getCountService = (columns?: string[]) =>
+    getService((options) => {
+        const count = PatientSessionRepository(options).count('patientSeqKey', {
+            as: 'count',
+        });
+
+        columns && count.select(columns).groupBy(columns);
+
+        return count;
+    });
+
+const getCountQueryFn = (columns?: string[]) => (options: Options) => {
+    const count = PatientSessionRepository(options).count('patientSeqKey', {
+        as: 'count',
+    });
+
+    columns && count.select(columns).groupBy(columns);
+
+    return count;
 };
 
-const PatientSessionService = (
-    connection: Connection,
-    { count, page, start, end, patientName }: Options,
-) => {
-    const sql = Snowflake.select()
-        .withSchema('LIVE DATA.RESPIRONICS')
-        .from('PATIENTSESSIONS_SRC');
+export const getAll = getService((options) => {
+    const { count, page } = options;
 
-    start && end && sql.whereBetween('THERAPYDATE', [start, end]);
-    patientName && sql.andWhere('PATIENTNAME', 'ILIKE', `%${patientName}%`);
-
-    sql.orderBy('PATIENTID')
+    return PatientSessionRepository(options)
+        .orderBy([
+            { column: 'patientId', order: 'desc' },
+            { column: 'therapyDate', order: 'desc' },
+        ])
         .limit(count)
         .offset(count * page);
+});
 
-    return execute(connection, sql.toQuery());
-};
+export const getCount = getService(getCountQueryFn());
 
-export default PatientSessionService;
+export const getCountByStartOfMonth = getCountService(['startOfMonth']);
+
+export const getCountByCompliant = getCountService(['compliant']);
+
+export const getCountByTherapyModeGroup = getCountService(['therapyModeGroup']);
+
+export const getCountByAge = getCountService(['over65']);

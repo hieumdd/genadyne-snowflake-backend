@@ -1,4 +1,4 @@
-import { Options } from './patient.repository';
+import { Options } from './patient-session.repository';
 
 const page = { count: 10, page: 0 };
 const time = { start: '2020-01-01', end: '2023-01-01' };
