@@ -4,6 +4,7 @@ import express from 'express';
 import { getConnection } from './providers/snowflake';
 
 import patientSessionController from './features/patient-session/patient-session.controller';
+import patientController from './features/patient/patient.controller';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
     }
 });
 
-app.get('/patient-session', patientSessionController);
+app.use('/patient-session', patientSessionController);
+app.use('/patient', patientController);
 
 http('main', app);
