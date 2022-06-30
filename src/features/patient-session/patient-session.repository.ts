@@ -2,15 +2,9 @@ import { Knex } from 'knex';
 
 import { Snowflake } from '../../providers/snowflake';
 
-export type Options = {
-    start?: string;
-    end?: string;
-    patientName?: string;
-    count: number;
-    page: number;
-};
+import { Options } from '../common/repository';
 
-const PatientSessionRepository = ({ start, end, patientName }: Options) => {
+const patientSessionRepository = ({ start, end, patientName }: Options) => {
     const dimensions = {
         therapyDate: 'THERAPYDATE',
         patientSeqKey: 'PATIENTSEQKEY',
@@ -93,4 +87,4 @@ const PatientSessionRepository = ({ start, end, patientName }: Options) => {
         .from('patient');
 };
 
-export default PatientSessionRepository;
+export default patientSessionRepository;

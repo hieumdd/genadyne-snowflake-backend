@@ -3,6 +3,7 @@ import express from 'express';
 
 import { getConnection } from './providers/snowflake';
 
+import optionsMiddleware from './features/middleware/options';
 import patientSessionController from './features/patient-session/patient-session.controller';
 import patientController from './features/patient/patient.controller';
 
@@ -25,6 +26,8 @@ app.use((req, res, next) => {
         next();
     }
 });
+
+app.use(optionsMiddleware);
 
 app.use('/patient-session', patientSessionController);
 app.use('/patient', patientController);

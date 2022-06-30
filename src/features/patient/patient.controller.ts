@@ -2,12 +2,10 @@ import { Router } from 'express';
 
 import patientService from './patient.service';
 
+import { getController } from '../common/controller';
+
 const patientController = Router();
 
-patientController.get('/', (req, res) => {
-    patientService(req.snowflake)
-        .then((data) => res.json({ data }))
-        .catch((err) => res.status(500).json({ error: err.message }));
-});
+patientController.get('/', getController(patientService));
 
 export default patientController;

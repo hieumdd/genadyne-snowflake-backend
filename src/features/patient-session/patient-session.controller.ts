@@ -1,54 +1,33 @@
-import { Handler, Router } from 'express';
+import { Router } from 'express';
 
-import * as PatientService from './patient-session.service';
+import { getController } from '../common/controller';
+import * as patientService from './patient-session.service';
 
 const patientSessionController = Router();
 const patientSessionSummaryController = Router();
 
-const getController =
-    (service: PatientService.Service): Handler =>
-    (req, res) => {
-        service(req.snowflake, req.options)
-            .then((data) => res.json({ data }))
-            .catch((err) => res.status(500).json({ error: err.message }));
-    };
+patientSessionController.get('/', getController(patientService.getAll));
 
-patientSessionController.use((req, res, next) => {
-    req.options = {
-        count: parseInt(<string>req.query.count || '500'),
-        page: parseInt(<string>req.query.page || '0'),
-        start: <string>req.query.start,
-        end: <string>req.query.end,
-        patientName: req.query.patientName
-            ? decodeURI(<string>req.query.patientName)
-            : undefined,
-    };
-
-    next();
-});
-
-patientSessionController.get('/', getController(PatientService.getAll));
-
-patientSessionSummaryController.get('/', getController(PatientService.getCount));
+patientSessionSummaryController.get('/', getController(patientService.getCount));
 
 patientSessionSummaryController.get(
     '/start-of-month',
-    getController(PatientService.getCountByStartOfMonth),
+    getController(patientService.getCountByStartOfMonth),
 );
 
 patientSessionSummaryController.get(
     '/compliant',
-    getController(PatientService.getCountByCompliant),
+    getController(patientService.getCountByCompliant),
 );
 
 patientSessionSummaryController.get(
     '/therapy-mode-group',
-    getController(PatientService.getCountByTherapyModeGroup),
+    getController(patientService.getCountByTherapyModeGroup),
 );
 
 patientSessionSummaryController.get(
     '/age',
-    getController(PatientService.getCountByAge),
+    getController(patientService.getCountByAge),
 );
 
 patientSessionController.use('/summary', patientSessionSummaryController);

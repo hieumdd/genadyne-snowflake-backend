@@ -11,9 +11,11 @@ describe('Query', () => {
     });
 
     it('Query', async () => {
-        return patientService(connection).then((data) => {
-            console.log(data);
-            expect(data).toBeTruthy();
-        });
+        return patientService(connection, { page: 0, count: 10 }).then(
+            (data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            },
+        );
     });
 });

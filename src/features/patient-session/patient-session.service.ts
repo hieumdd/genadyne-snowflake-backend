@@ -2,9 +2,9 @@ import { Knex } from 'knex';
 import { Connection } from 'snowflake-sdk';
 
 import { execute, Data } from '../../providers/snowflake';
-import PatientSessionRepository, {
-    Options,
-} from './patient-session.repository';
+
+import { Options } from '../common/repository';
+import patientSessionRepository from './patient-session.repository';
 
 export type Service = (conn: Connection, options: Options) => Promise<Data[]>;
 
@@ -15,7 +15,7 @@ const getService =
 
 const getCountService = (columns?: string[]) =>
     getService((options) => {
-        const count = PatientSessionRepository(options).count('patientSeqKey', {
+        const count = patientSessionRepository(options).count('patientSeqKey', {
             as: 'count',
         });
 
@@ -25,7 +25,7 @@ const getCountService = (columns?: string[]) =>
     });
 
 const getCountQueryFn = (columns?: string[]) => (options: Options) => {
-    const count = PatientSessionRepository(options).count('patientSeqKey', {
+    const count = patientSessionRepository(options).count('patientSeqKey', {
         as: 'count',
     });
 
@@ -37,7 +37,7 @@ const getCountQueryFn = (columns?: string[]) => (options: Options) => {
 export const getAll = getService((options) => {
     const { count, page } = options;
 
-    return PatientSessionRepository(options)
+    return patientSessionRepository(options)
         .orderBy([
             { column: 'patientId', order: 'desc' },
             { column: 'therapyDate', order: 'desc' },

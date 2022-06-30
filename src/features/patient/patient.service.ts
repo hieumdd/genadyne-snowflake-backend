@@ -1,9 +1,12 @@
-import { Connection } from 'snowflake-sdk';
-
-import { execute } from '../../providers/snowflake';
+import { getService } from '../common/service';
 import patientRepository from './patient.repository';
 
-const patientService = (connection: Connection) =>
-    execute(connection, patientRepository().toQuery());
+const patientService = getService((options) => {
+    const { count, page } = options;
+
+    return patientRepository()
+        .limit(count)
+        .offset(count * page);
+});
 
 export default patientService;
