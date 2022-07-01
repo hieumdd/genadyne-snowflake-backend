@@ -1,26 +1,31 @@
-import { getCountService, getService } from '../common/service';
-import patientSessionRepository from '../patient-session/patient-session.repository'
+import { getService } from '../common/service';
+import patientRepository from './patient.repository';
 
-const patientCountService = getCountService('patientId')
+export const getCountService = (columns?: string[]) =>
+    getService((options) => {
+        const count = patientRepository(options).count('patientId', {
+            as: 'count',
+        });
+
+        columns && count.select(columns).groupBy(columns);
+
+        return count;
+    });
 
 export const getAll = getService((options) => {
     const { count, page } = options;
 
-    return patientSessionRepository(options)
-        .orderBy([
-            { column: 'patientId', order: 'desc' },
-            { column: 'therapyDate', order: 'desc' },
-        ])
+    return patientRepository(options)
+        .select()
+        .orderBy([{ column: 'patientId', order: 'desc' }])
         .limit(count)
         .offset(count * page);
 });
 
-export const getCount = patientCountService();
+export const getCountByStartOfMonth = getCountService(['startOfMonth']);
 
-export const getCountByStartOfMonth = patientCountService(['startOfMonth']);
+export const getCountByCompliant = getCountService(['lastCompliant']);
 
-export const getCountByCompliant = patientCountService(['lastCompliant']);
+export const getCountByTherapyModeGroup = getCountService(['therapyModeGroup']);
 
-export const getCountByTherapyModeGroup = patientCountService(['therapyModeGroup']);
-
-export const getCountByAge = patientCountService(['over65']);
+export const getCountByAge = getCountService(['over65']);

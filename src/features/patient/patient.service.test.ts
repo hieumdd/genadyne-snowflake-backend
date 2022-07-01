@@ -1,7 +1,8 @@
-import { Connection } from 'snowflake-sdk';
-
 import { getConnection } from '../../providers/snowflake';
-import patientService from './patient.service';
+import * as patientService from './patient.service';
+
+import cases from '../patient-session/patient-session.config.test';
+import { Connection } from 'snowflake-sdk';
 
 describe('Query', () => {
     let connection: Connection;
@@ -10,12 +11,43 @@ describe('Query', () => {
         connection = await getConnection();
     });
 
-    it('Query', async () => {
-        return patientService(connection, { page: 0, count: 10 }).then(
-            (data) => {
+    it.each(cases)('$name', async ({ options }) => {
+        return patientService.getAll(connection, options).then((data) => {
+            console.log(data);
+            expect(data).toBeTruthy();
+        });
+    });
+
+    it('Count by Start of Month', async () => {
+        return patientService
+            .getCountByStartOfMonth(connection, cases[1].options)
+            .then((data) => {
                 console.log(data);
                 expect(data).toBeTruthy();
-            },
-        );
+            });
+    });
+    it('Count by Compliant', async () => {
+        return patientService
+            .getCountByCompliant(connection, cases[1].options)
+            .then((data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            });
+    });
+    it('Count By Therapy Mode Group', async () => {
+        return patientService
+            .getCountByTherapyModeGroup(connection, cases[1].options)
+            .then((data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            });
+    });
+    it('Count By Age', async () => {
+        return patientService
+            .getCountByAge(connection, cases[1].options)
+            .then((data) => {
+                console.log(data);
+                expect(data).toBeTruthy();
+            });
     });
 });

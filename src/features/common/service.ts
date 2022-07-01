@@ -14,9 +14,10 @@ export const getService =
 
 export const getCountService = (id: string) => (columns?: string[]) =>
     getService((options) => {
-        const count = patientSessionRepository(options).count(id, {
-            as: 'count',
-        });
+        const count = patientSessionRepository(options)
+            .count(id, {
+                as: 'count',
+            })
 
         columns && count.select(columns).groupBy(columns);
 

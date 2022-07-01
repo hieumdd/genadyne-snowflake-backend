@@ -1,20 +1,27 @@
-import { Snowflake } from '../../providers/snowflake';
+import { Knex } from 'knex';
 
-const patientRepository = () => {
-    const dimensions = {
-        patientSeqKey: 'PATIENTSEQKEY',
-        patientId: 'PATIENTID',
-        patientName: 'PATIENTNAME',
-        patientFirstName: 'PATIENTFIRSTNAME',
-        patientOfficeName: 'PATIENTOFFICENAME',
-        patientDateOfBirth: 'PATIENTDATEOFBIRTH',
-        facilityPatientId: 'FACILITYPATIENTID',
-    };
+import { Options } from '../common/repository';
+import patientSessionRepository from '../patient-session/patient-session.repository';
 
-    return Snowflake.withSchema('LIVE DATA.RESPIRONICS')
-        .from('PATIENTSESSIONS_SRC')
-        .select(dimensions)
-        .distinct();
-};
+const withDistinct = (qb: Knex.QueryBuilder) =>
+    qb
+        .from('patient')
+        .distinct(
+            'patientId',
+            'patientName',
+            'patientFirstName',
+            'patientOfficeName',
+            'patientDateOfBirth',
+            'facilityPatientId',
+            'startOfMonth',
+            'lastCompliant',
+            'therapyModeGroup',
+            'over65',
+        );
+
+const patientRepository = (options: Options) =>
+    patientSessionRepository(options)
+        .with('distinct', withDistinct)
+        .from('distinct');
 
 export default patientRepository;

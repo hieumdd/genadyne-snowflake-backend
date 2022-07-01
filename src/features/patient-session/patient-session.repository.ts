@@ -100,8 +100,7 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
 
     return Snowflake.with('flag', withFlag)
         .with('tags', withTags)
-        .with('patient', withPatient)
-        .from('patient');
+        .with('patient', withPatient);
 };
 
 export default patientSessionRepository;
