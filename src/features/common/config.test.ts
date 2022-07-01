@@ -1,7 +1,7 @@
-import { Options } from '../common/repository';
+import { Options } from './repository';
 
 const page = { count: 10, page: 0 };
-const time = { start: '2020-01-01', end: '2023-01-01' };
+const time = { start: '2021-06-01', end: '2022-07-01' };
 const patientName = { patientName: 'LAIRD  NANCY' };
 
 const cases: { name: string; options: Options }[] = [

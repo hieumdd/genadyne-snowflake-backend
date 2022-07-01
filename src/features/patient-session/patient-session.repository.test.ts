@@ -1,5 +1,5 @@
 import patientSessionRepository from './patient-session.repository';
-import cases from './patient-session.config.test';
+import cases from '../common/config.test';
 
 describe('Build', () => {
     it.each(cases)('$name', async ({ options }) => {

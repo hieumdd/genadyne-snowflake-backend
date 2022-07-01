@@ -1,7 +1,7 @@
 import { getConnection } from '../../providers/snowflake';
 import * as patientService from './patient.service';
 
-import cases from '../patient-session/patient-session.config.test';
+import cases from '../common/config.test';
 import { Connection } from 'snowflake-sdk';
 
 describe('Query', () => {
@@ -13,7 +13,6 @@ describe('Query', () => {
 
     it.each(cases)('$name', async ({ options }) => {
         return patientService.getAll(connection, options).then((data) => {
-            console.log(data);
             expect(data).toBeTruthy();
         });
     });
@@ -22,7 +21,6 @@ describe('Query', () => {
         return patientService
             .getCountByStartOfMonth(connection, cases[1].options)
             .then((data) => {
-                console.log(data);
                 expect(data).toBeTruthy();
             });
     });
@@ -30,7 +28,6 @@ describe('Query', () => {
         return patientService
             .getCountByCompliant(connection, cases[1].options)
             .then((data) => {
-                console.log(data);
                 expect(data).toBeTruthy();
             });
     });
@@ -38,7 +35,6 @@ describe('Query', () => {
         return patientService
             .getCountByTherapyModeGroup(connection, cases[1].options)
             .then((data) => {
-                console.log(data);
                 expect(data).toBeTruthy();
             });
     });
@@ -46,7 +42,6 @@ describe('Query', () => {
         return patientService
             .getCountByAge(connection, cases[1].options)
             .then((data) => {
-                console.log(data);
                 expect(data).toBeTruthy();
             });
     });

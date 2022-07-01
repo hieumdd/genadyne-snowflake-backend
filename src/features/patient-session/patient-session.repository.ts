@@ -5,102 +5,78 @@ import { Snowflake } from '../../providers/snowflake';
 import { Options } from '../common/repository';
 
 const patientSessionRepository = ({ start, end, patientName }: Options) => {
-    const dimensions = {
-        therapyDate: 'THERAPYDATE',
-        patientSeqKey: 'PATIENTSEQKEY',
-        patientId: 'PATIENTID',
-        patientName: 'PATIENTNAME',
-        patientFirstName: 'PATIENTFIRSTNAME',
-        patientOfficeName: 'PATIENTOFFICENAME',
-        patientDateOfBirth: 'PATIENTDATEOFBIRTH',
-        facilityPatientId: 'FACILITYPATIENTID',
-        device: 'DEVICE',
-        deviceModel: 'DEVICEMODEL',
-        pcpupin: 'PCPUPIN',
-        sleepdrupin: 'SLEEPDRUPIN',
-        therapyMode: 'THERAPYMODE',
-        secondsOfUse: 'SECONDSOFUSE',
-    };
+    const columns = [
+        'therapyDate',
+        'patientSeqKey',
+        'patientId',
+        'patientName',
+        'patientFirstName',
+        'patientOfficeName',
+        'patientDateOfBirth',
+        'facilityPatientId',
+        'device',
+        'deviceModel',
+        'pcpupin',
+        'sleepdrupin',
+        'therapyMode',
+        'secondsOfUse',
+        'startOfMonth',
+        'therapyModeGroup',
+    ];
 
-    const withFlag = (qb: Knex.QueryBuilder) => {
-        qb.withSchema('LIVE DATA.RESPIRONICS')
-            .from('PATIENTSESSIONS_SRC')
-            .select({
-                ...dimensions,
-                rolling30DaysUsage: Snowflake.raw(
-                    `sum(
-                        iff("SECONDSOFUSE" > 0, 1, 0)
-                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`,
+    const withCompliant = (qb: Knex.QueryBuilder) => {
+        qb.withSchema('UTIL_DB.PUBLIC')
+            .from('RESPIRONICS_PATIENTSESSIONS')
+            .select([
+                ...columns,
+                Snowflake.raw(
+                    `datediff(year, "patientDateOfBirth", current_date()) > 65 AS "over65"`,
                 ),
-                rolling30Days4hrsUsage: Snowflake.raw(
-                    `sum(
-                        iff("SECONDSOFUSE" > 60 * 60 * 4, 1, 0)
-                    ) over (partition by "PATIENTID" order by "THERAPYDATE")`,
+                Snowflake.raw(
+                    `(
+                        count_if("usage" > 0) over (
+                            partition by "patientId"
+                            order by
+                                "therapyDate"
+                        ) > 30
+                        and div0(
+                            count_if("usage" > 0) over (
+                                partition by "patientId"
+                                order by
+                                    "therapyDate"
+                            ),
+                            count_if("usage" > 0) over (
+                                partition by "patientId"
+                                order by
+                                    "therapyDate"
+                            )
+                        ) > 0.7
+                    ) as "compliant"`,
                 ),
-            });
-        start && end && qb.whereBetween('THERAPYDATE', [start, end]);
-        patientName && qb.andWhere('PATIENTNAME', 'ILIKE', `%${patientName}%`);
+            ]);
+
+        start && end && qb.whereBetween('therapyDate', [start, end]);
+        patientName && qb.andWhere('patientName', 'ILIKE', `%${patientName}%`);
 
         return qb;
     };
 
-    const withTags = (qb: Knex.QueryBuilder) =>
-        qb.from('flag').select({
-            ...Object.keys(dimensions)
-                .map((dimension) => ({ [dimension]: dimension }))
-                .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
-            rolling30DaysUsage: 'rolling30DaysUsage',
-            rolling30Days4hrsUsage: 'rolling30Days4hrsUsage',
-            startOfMonth: Snowflake.raw(`date_trunc('month', "therapyDate")`),
-            therapyModeGroup: Snowflake.raw(
-                `case
-                    when
-                        "therapyMode" ilike '%ST%'
-                        or "therapyMode" ilike '%ASV%'
-                        or "therapyMode" ilike '%AVAPS%'
-                        or "therapyMode" ilike '%S%'
-                        or "therapyMode" ilike '%S/T%'
-                    then 'RAD'
-                    when
-                        "therapyMode" ilike '%CPAP%'
-                    then 'CPAP'
-                    when
-                        "therapyMode" ilike '%Bi-Level%'
-                        or "therapyMode" ilike '%BiLevel%'
-                        then 'Bi-Level'
-                else 'Other' end`,
-            ),
-            over65: Snowflake.raw(
-                `iff(datediff(year, "patientDateOfBirth", current_date()) > 65, true, false)`,
-            ),
-            compliant: Snowflake.raw(
-                `iff(
-                    "rolling30DaysUsage" > 30 and div0("rolling30DaysUsage", "rolling30Days4hrsUsage") > 0.7,
-                    true,
-                    false
-                )`,
-            ),
-        });
+    const withLastCompliant = (qb: Knex.QueryBuilder) =>
+        qb
+            .from('compliant')
+            .select([
+                ...columns,
+                'over65',
+                'compliant',
+                Snowflake.raw(
+                    `last_value("compliant") over (partition by "patientId" order by "therapyDate") as "lastCompliant"`,
+                ),
+            ]);
 
-    const withPatient = (qb: Knex.QueryBuilder) =>
-        qb.from('tags').select({
-            ...Object.keys(dimensions)
-                .map((dimension) => ({ [dimension]: dimension }))
-                .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
-            rolling30DaysUsage: 'rolling30DaysUsage',
-            rolling30Days4hrsUsage: 'rolling30Days4hrsUsage',
-            startOfMonth: 'startOfMonth',
-            therapyModeGroup: 'therapyModeGroup',
-            over65: 'over65',
-            compliant: 'compliant',
-            lastCompliant: Snowflake.raw(
-                `last_value ("compliant") over (partition by "patientId" order by "therapyDate") `,
-            ),
-        });
-
-    return Snowflake.with('flag', withFlag)
-        .with('tags', withTags)
-        .with('patient', withPatient);
+    return Snowflake.with('compliant', withCompliant).with(
+        'lastCompliant',
+        withLastCompliant,
+    );
 };
 
 export default patientSessionRepository;

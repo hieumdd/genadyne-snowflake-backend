@@ -5,7 +5,7 @@ import patientSessionRepository from '../patient-session/patient-session.reposit
 
 const withDistinct = (qb: Knex.QueryBuilder) =>
     qb
-        .from('patient')
+        .from('lastCompliant')
         .distinct(
             'patientId',
             'patientName',
