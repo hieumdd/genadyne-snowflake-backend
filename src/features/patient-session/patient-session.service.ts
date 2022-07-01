@@ -1,38 +1,7 @@
-import { Knex } from 'knex';
-import { Connection } from 'snowflake-sdk';
-
-import { execute, Data } from '../../providers/snowflake';
-
-import { Options } from '../common/repository';
+import { getCountService, getService } from '../common/service';
 import patientSessionRepository from './patient-session.repository';
 
-export type Service = (conn: Connection, options: Options) => Promise<Data[]>;
-
-const getService =
-    (queryFn: (options: Options) => Knex.QueryBuilder): Service =>
-    (conn, options) =>
-        execute(conn, queryFn(options).toQuery());
-
-const getCountService = (columns?: string[]) =>
-    getService((options) => {
-        const count = patientSessionRepository(options).count('patientSeqKey', {
-            as: 'count',
-        });
-
-        columns && count.select(columns).groupBy(columns);
-
-        return count;
-    });
-
-const getCountQueryFn = (columns?: string[]) => (options: Options) => {
-    const count = patientSessionRepository(options).count('patientSeqKey', {
-        as: 'count',
-    });
-
-    columns && count.select(columns).groupBy(columns);
-
-    return count;
-};
+const patientSessionCountService = getCountService('patientSeqKey')
 
 export const getAll = getService((options) => {
     const { count, page } = options;
@@ -46,12 +15,12 @@ export const getAll = getService((options) => {
         .offset(count * page);
 });
 
-export const getCount = getService(getCountQueryFn());
+export const getCount = patientSessionCountService();
 
-export const getCountByStartOfMonth = getCountService(['startOfMonth']);
+export const getCountByStartOfMonth = patientSessionCountService(['startOfMonth']);
 
-export const getCountByCompliant = getCountService(['compliant']);
+export const getCountByCompliant = patientSessionCountService(['compliant']);
 
-export const getCountByTherapyModeGroup = getCountService(['therapyModeGroup']);
+export const getCountByTherapyModeGroup = patientSessionCountService(['therapyModeGroup']);
 
-export const getCountByAge = getCountService(['over65']);
+export const getCountByAge = patientSessionCountService(['over65']);

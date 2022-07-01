@@ -11,12 +11,12 @@ describe('Query', () => {
         connection = await getConnection();
     });
 
-    // it.each(cases)('$name', async ({ options }) => {
-    //     return PatientService.getAll(connection, options).then((data) => {
-    //         console.log(data);
-    //         expect(data).toBeTruthy();
-    //     });
-    // });
+    it.each(cases)('$name', async ({ options }) => {
+        return PatientService.getAll(connection, options).then((data) => {
+            console.log(data);
+            expect(data).toBeTruthy();
+        });
+    });
 
     it('Count', async () => {
         return PatientService.getCount(connection, cases[1].options).then(

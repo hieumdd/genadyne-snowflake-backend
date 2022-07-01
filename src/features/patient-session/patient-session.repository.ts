@@ -44,7 +44,7 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
         return qb;
     };
 
-    const withPatient = (qb: Knex.QueryBuilder) =>
+    const withTags = (qb: Knex.QueryBuilder) =>
         qb.from('flag').select({
             ...Object.keys(dimensions)
                 .map((dimension) => ({ [dimension]: dimension }))
@@ -82,7 +82,24 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
             ),
         });
 
+    const withPatient = (qb: Knex.QueryBuilder) =>
+        qb.from('tags').select({
+            ...Object.keys(dimensions)
+                .map((dimension) => ({ [dimension]: dimension }))
+                .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+            rolling30DaysUsage: 'rolling30DaysUsage',
+            rolling30Days4hrsUsage: 'rolling30Days4hrsUsage',
+            startOfMonth: 'startOfMonth',
+            therapyModeGroup: 'therapyModeGroup',
+            over65: 'over65',
+            compliant: 'compliant',
+            lastCompliant: Snowflake.raw(
+                `last_value ("compliant") over (partition by "patientId" order by "therapyDate") `,
+            ),
+        });
+
     return Snowflake.with('flag', withFlag)
+        .with('tags', withTags)
         .with('patient', withPatient)
         .from('patient');
 };
