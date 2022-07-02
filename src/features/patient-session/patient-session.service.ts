@@ -1,31 +1,15 @@
-import { Connection } from 'snowflake-sdk';
+import { getService } from '../common/service';
+import patientSessionRepository from './patient-session.repository';
 
-import { Snowflake, execute } from '../../providers/snowflake';
+export const getAll = getService((options) => {
+    const { count, page } = options;
 
-export type Options = {
-    count: number;
-    page: number;
-    start?: string;
-    end?: string;
-    patientName?: string;
-};
-
-const PatientSessionService = (
-    connection: Connection,
-    { count, page, start, end, patientName }: Options,
-) => {
-    const sql = Snowflake.select()
-        .withSchema('LIVE DATA.RESPIRONICS')
-        .from('PATIENTSESSIONS_SRC');
-
-    start && end && sql.whereBetween('THERAPYDATE', [start, end]);
-    patientName && sql.andWhere('PATIENTNAME', 'ILIKE', `%${patientName}%`);
-
-    sql.orderBy('PATIENTID')
+    return patientSessionRepository(options)
+        .from('lastCompliant')
+        .orderBy([
+            { column: 'patientId', order: 'desc' },
+            { column: 'therapyDate', order: 'desc' },
+        ])
         .limit(count)
         .offset(count * page);
-
-    return execute(connection, sql.toQuery());
-};
-
-export default PatientSessionService;
+});

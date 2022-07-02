@@ -2,7 +2,9 @@ import { http } from '@google-cloud/functions-framework';
 import express from 'express';
 
 import { getConnection } from './providers/snowflake';
-import PatientSessionController from './features/patient-session/patient-session.controller';
+
+import optionsMiddleware from './features/middleware/options';
+import patientSessionController from './features/patient-session/patient-session.controller';
 import patientController from './features/patient/patient.controller';
 
 const app = express();
@@ -25,7 +27,9 @@ app.use((req, res, next) => {
     }
 });
 
-app.get('/patient-session', PatientSessionController);
+app.use(optionsMiddleware);
+
+app.use('/patient-session', patientSessionController);
 app.use('/patient', patientController);
 
 http('main', app);
