@@ -11,26 +11,22 @@ describe('Query', () => {
         connection = await getConnection();
     });
 
-    it.each(cases)('$name', async ({ options }) => {
-        return patientService.getAll(connection, options).then((data) => {
-            expect(data).toBeTruthy();
-        });
-    });
+    // it.each(cases)('$name', async ({ options }) => {
+    //     return patientService.getAll(connection, options).then((data) => {
+    //         expect(data).toBeTruthy();
+    //     });
+    // });
 
     it('Count', async () => {
         return patientService
             .getCount(connection, cases[1].options)
-            .then((data) => {
-                expect(data).toBeTruthy();
-            });
+            .then((data) => expect(data).toBeTruthy());
     });
 
     it('Count by Start of Month', async () => {
         return patientService
             .getCountByStartOfMonth(connection, cases[1].options)
-            .then((data) => {
-                expect(data).toBeTruthy();
-            });
+            .then((data) => expect(data).toBeTruthy());
     });
     it('Count by Compliant', async () => {
         return patientService
@@ -42,15 +38,11 @@ describe('Query', () => {
     it('Count By Therapy Mode Group', async () => {
         return patientService
             .getCountByTherapyModeGroup(connection, cases[1].options)
-            .then((data) => {
-                expect(data).toBeTruthy();
-            });
+            .then((data) => expect(data).toBeTruthy());
     });
     it('Count By Age', async () => {
         return patientService
             .getCountByAge(connection, cases[1].options)
-            .then((data) => {
-                expect(data).toBeTruthy();
-            });
+            .then((data) => expect(data).toBeTruthy());
     });
 });
