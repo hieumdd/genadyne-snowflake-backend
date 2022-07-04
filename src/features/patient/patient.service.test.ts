@@ -17,6 +17,14 @@ describe('Query', () => {
         });
     });
 
+    it('Count', async () => {
+        return patientService
+            .getCount(connection, cases[1].options)
+            .then((data) => {
+                expect(data).toBeTruthy();
+            });
+    });
+
     it('Count by Start of Month', async () => {
         return patientService
             .getCountByStartOfMonth(connection, cases[1].options)
