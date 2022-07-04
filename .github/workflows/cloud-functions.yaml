@@ -74,7 +74,7 @@ jobs:
           --entry-point=main
           --source=dist
           --region=us-central1
-          --timeout=120
+          --timeout=530
           --memory=512MB
           --runtime=nodejs16
           --trigger-http
