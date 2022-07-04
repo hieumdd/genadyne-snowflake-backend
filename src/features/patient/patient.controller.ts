@@ -8,6 +8,8 @@ const patientSummaryController = Router();
 
 patientController.get('/', getController(patientService.getAll));
 
+patientSummaryController.get('/', getController(patientService.getCount));
+
 patientSummaryController.get(
     '/start-of-month',
     getController(patientService.getCountByStartOfMonth),
