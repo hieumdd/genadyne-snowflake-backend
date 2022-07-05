@@ -12,3 +12,7 @@ export const getAll = getService((options) => {
         .limit(count)
         .offset(count * page);
 });
+
+export const getCount = getService((options) => {
+    return patientSessionRepository(options).count({ COUNT: '*' });
+});
