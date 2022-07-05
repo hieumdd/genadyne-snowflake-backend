@@ -12,8 +12,18 @@ describe('Query', () => {
     });
 
     it.each(cases)('$name', async ({ options }) => {
-        return patientSessionService.getAll(connection, options).then((data) => {
-            expect(data).toBeTruthy();
-        });
+        return patientSessionService
+            .getAll(connection, options)
+            .then((data) => {
+                expect(data).toBeTruthy();
+            });
+    });
+
+    it('Count', async () => {
+        return patientSessionService
+            .getCount(connection, cases[1].options)
+            .then((data) => {
+                expect(data).toBeTruthy();
+            });
     });
 });
