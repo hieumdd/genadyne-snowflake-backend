@@ -3,7 +3,7 @@ import patientRepository from './patient.repository';
 
 export const getCountService = (columns?: string[]) =>
     getService((options) => {
-        const count = patientRepository(options).count('PATIENTID', {
+        const count = patientRepository(options).countDistinct('PATIENTID', {
             as: 'COUNT',
         });
 
