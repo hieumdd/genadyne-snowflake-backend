@@ -58,24 +58,33 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
         return qb;
     };
 
-    const withLastCompliant = (qb: Knex.QueryBuilder) =>
-        qb
-            .from('compliant')
-            .select([
-                ...columns,
-                'COMPLIANT',
-                Snowflake.raw(
-                    `last_value("OVER65") over (partition by "PATIENTID" order by "THERAPYDATE") as "OVER65"`,
-                ),
-                Snowflake.raw(
-                    `last_value("COMPLIANT") ignore nulls over (partition by "PATIENTID" order by "THERAPYDATE") as "LASTCOMPLIANT"`,
-                ),
-            ]);
+    const withLast = (qb: Knex.QueryBuilder) =>
+        qb.from('compliant').select([
+            ...columns,
+            'COMPLIANT',
+            Snowflake.raw(
+                `last_value("OVER65") ignore nulls over (
+                    partition by "PATIENTID"
+                    order by "THERAPYDATE"
+                ) as "LASTOVER65"`,
+            ),
+            Snowflake.raw(
+                `last_value("COMPLIANT") ignore nulls over (
+                    partition by "PATIENTID"
+                    order by "THERAPYDATE"
+                ) as "LASTCOMPLIANT"`,
+            ),
+            Snowflake.raw(
+                `last_value("THERAPYMODEGROUP") ignore nulls over (
+                    partition by "PATIENTID"
+                    order by "THERAPYDATE"
+                ) as "LASTTHERAPYMODEGROUP"`,
+            ),
+        ]);
 
-    return Snowflake.with('compliant', withCompliant).with(
-        'lastCompliant',
-        withLastCompliant,
-    );
+    return Snowflake.with('compliant', withCompliant)
+        .with('last', withLast)
+        .from('last');
 };
 
 export default patientSessionRepository;
