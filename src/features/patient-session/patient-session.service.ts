@@ -7,8 +7,8 @@ export const getAll = getService((options) => {
     return patientSessionRepository(options)
         .from('lastCompliant')
         .orderBy([
-            { column: 'patientId', order: 'desc' },
-            { column: 'therapyDate', order: 'desc' },
+            { column: 'PATIENTID', order: 'desc' },
+            { column: 'THERAPYDATE', order: 'desc' },
         ])
         .limit(count)
         .offset(count * page);

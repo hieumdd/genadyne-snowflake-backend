@@ -7,16 +7,16 @@ const withDistinct = (qb: Knex.QueryBuilder) =>
     qb
         .from('lastCompliant')
         .distinct(
-            'patientId',
-            'patientName',
-            'patientFirstName',
-            'patientOfficeName',
-            'patientDateOfBirth',
-            'facilityPatientId',
-            'startOfMonth',
-            'lastCompliant',
-            'therapyModeGroup',
-            'over65',
+            'PATIENTID',
+            'PATIENTNAME',
+            'PATIENTFIRSTNAME',
+            'PATIENTOFFICENAME',
+            'PATIENTDATEOFBIRTH',
+            'FACILITYPATIENTID',
+            'STARTOFMONTH',
+            'LASTCOMPLIANT',
+            'THERAPYMODEGROUP',
+            'OVER65',
         );
 
 const patientRepository = (options: Options) =>
