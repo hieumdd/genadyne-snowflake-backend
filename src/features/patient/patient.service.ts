@@ -22,6 +22,8 @@ export const getAll = getService((options) => {
         .offset(count * page);
 });
 
+export const getCount = getCountService();
+
 export const getCountByStartOfMonth = getCountService(['STARTOFMONTH']);
 
 export const getCountByCompliant = getCountService(['LASTCOMPLIANT']);
