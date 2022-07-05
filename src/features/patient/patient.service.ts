@@ -27,7 +27,7 @@ export const getAll = getService((options) => {
 
 export const getCount = getCountService();
 
-export const getCountByStartOfMonth = getCountService();
+export const getCountByStartOfMonth = getCountService(['STARTOFMONTH']);
 
 export const getCountByCompliant = getCountService(['LASTCOMPLIANT']);
 
