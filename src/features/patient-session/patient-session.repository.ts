@@ -6,22 +6,22 @@ import { Options } from '../common/repository';
 
 const patientSessionRepository = ({ start, end, patientName }: Options) => {
     const columns = [
-        'therapyDate',
-        'patientSeqKey',
-        'patientId',
-        'patientName',
-        'patientFirstName',
-        'patientOfficeName',
-        'patientDateOfBirth',
-        'facilityPatientId',
-        'device',
-        'deviceModel',
-        'pcpupin',
-        'sleepdrupin',
-        'therapyMode',
-        'secondsOfUse',
-        'startOfMonth',
-        'therapyModeGroup',
+        'THERAPYDATE',
+        'PATIENTSEQKEY',
+        'PATIENTID',
+        'PATIENTNAME',
+        'PATIENTFIRSTNAME',
+        'PATIENTOFFICENAME',
+        'PATIENTDATEOFBIRTH',
+        'FACILITYPATIENTID',
+        'DEVICE',
+        'DEVICEMODEL',
+        'PCPUPIN',
+        'SLEEPDRUPIN',
+        'THERAPYMODE',
+        'SECONDSOFUSE',
+        'STARTOFMONTH',
+        'THERAPYMODEGROUP',
     ];
 
     const withCompliant = (qb: Knex.QueryBuilder) => {
@@ -30,33 +30,30 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
             .select([
                 ...columns,
                 Snowflake.raw(
-                    `datediff(year, "patientDateOfBirth", current_date()) > 65 AS "over65"`,
+                    `datediff(year, "PATIENTDATEOFBIRTH", current_date()) > 65 AS "OVER65"`,
                 ),
                 Snowflake.raw(
                     `(
-                        count_if("usage" > 0) over (
-                            partition by "patientId"
-                            order by
-                                "therapyDate"
+                        count_if("USAGE" > 0) over (
+                            partition by "PATIENTID"
+                            order by "THERAPYDATE"
                         ) > 30
                         and div0(
-                            count_if("usage" > 0) over (
-                                partition by "patientId"
-                                order by
-                                    "therapyDate"
+                            count_if("USAGE" > 0) over (
+                                partition by "PATIENTID"
+                                order by "THERAPYDATE"
                             ),
-                            count_if("usage" > 0) over (
-                                partition by "patientId"
-                                order by
-                                    "therapyDate"
+                            count_if("USAGE" > 0) over (
+                                partition by "PATIENTID"
+                                order by "THERAPYDATE"
                             )
                         ) > 0.7
-                    ) as "compliant"`,
+                    ) as "COMPLIANT"`,
                 ),
             ]);
 
-        start && end && qb.whereBetween('therapyDate', [start, end]);
-        patientName && qb.andWhere('patientName', 'ILIKE', `%${patientName}%`);
+        start && end && qb.whereBetween('THERAPYDATE', [start, end]);
+        patientName && qb.andWhere('PATIENTNAME', 'ILIKE', `%${patientName}%`);
 
         return qb;
     };
@@ -66,10 +63,12 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
             .from('compliant')
             .select([
                 ...columns,
-                'over65',
-                'compliant',
+                'COMPLIANT',
                 Snowflake.raw(
-                    `last_value("compliant") over (partition by "patientId" order by "therapyDate") as "lastCompliant"`,
+                    `last_value("OVER65") over (partition by "PATIENTID" order by "THERAPYDATE") as "OVER65"`,
+                ),
+                Snowflake.raw(
+                    `min("COMPLIANT") over (partition by "PATIENTID" order by "THERAPYDATE") as "LASTCOMPLIANT"`,
                 ),
             ]);
 
