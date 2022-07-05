@@ -5,7 +5,6 @@ export const getAll = getService((options) => {
     const { count, page } = options;
 
     return patientSessionRepository(options)
-        .from('lastCompliant')
         .orderBy([
             { column: 'PATIENTID', order: 'desc' },
             { column: 'THERAPYDATE', order: 'desc' },
