@@ -1,11 +1,14 @@
 import { getService } from '../common/service';
-import patientRepository from './patient.repository';
+import patientSessionRepository from '../patient-session/patient-session.repository';
 
 export const getCountService = (columns?: string[]) =>
     getService((options) => {
-        const count = patientRepository(options).countDistinct('PATIENTID', {
-            as: 'COUNT',
-        });
+        const count = patientSessionRepository(options).countDistinct(
+            'PATIENTID',
+            {
+                as: 'COUNT',
+            },
+        );
 
         columns && count.select(columns).groupBy(columns);
 
@@ -15,7 +18,7 @@ export const getCountService = (columns?: string[]) =>
 export const getAll = getService((options) => {
     const { count, page } = options;
 
-    return patientRepository(options)
+    return patientSessionRepository(options)
         .select()
         .orderBy([{ column: 'PATIENTID', order: 'desc' }])
         .limit(count)
@@ -24,10 +27,12 @@ export const getAll = getService((options) => {
 
 export const getCount = getCountService();
 
-export const getCountByStartOfMonth = getCountService(['STARTOFMONTH']);
+export const getCountByStartOfMonth = getCountService();
 
 export const getCountByCompliant = getCountService(['LASTCOMPLIANT']);
 
-export const getCountByTherapyModeGroup = getCountService(['THERAPYMODEGROUP']);
+export const getCountByTherapyModeGroup = getCountService([
+    'LASTTHERAPYMODEGROUP',
+]);
 
-export const getCountByAge = getCountService(['OVER65']);
+export const getCountByAge = getCountService(['LASTOVER65']);
