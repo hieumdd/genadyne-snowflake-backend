@@ -63,21 +63,21 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
             ...columns,
             'COMPLIANT',
             Snowflake.raw(
-                `last_value("OVER65") over (
-                        partition by "PATIENTID"
-                        order by "THERAPYDATE"
+                `last_value("OVER65") ignore nulls over (
+                    partition by "PATIENTID"
+                    order by "THERAPYDATE"
                 ) as "LASTOVER65"`,
             ),
             Snowflake.raw(
                 `last_value("COMPLIANT") ignore nulls over (
-                        partition by "PATIENTID"
-                        order by "THERAPYDATE"
+                    partition by "PATIENTID"
+                    order by "THERAPYDATE"
                 ) as "LASTCOMPLIANT"`,
             ),
             Snowflake.raw(
                 `last_value("THERAPYMODEGROUP") ignore nulls over (
-                        partition by "PATIENTID"
-                        order by "THERAPYDATE"
+                    partition by "PATIENTID"
+                    order by "THERAPYDATE"
                 ) as "LASTTHERAPYMODEGROUP"`,
             ),
         ]);
