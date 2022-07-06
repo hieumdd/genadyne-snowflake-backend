@@ -18,6 +18,8 @@ const patientSessionRepository = ({ start, end, patientName }: Options) => {
         'DEVICEMODEL',
         'PCPUPIN',
         'SLEEPDRUPIN',
+        'AHI',
+        'AVERAGELEAK',
         'THERAPYMODE',
         'SECONDSOFUSE',
         'STARTOFMONTH',

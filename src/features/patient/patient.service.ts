@@ -19,6 +19,18 @@ export const getAll = getService((options) => {
     const { count, page } = options;
 
     return patientSessionRepository(options)
+        .distinct([
+            'PATIENTSEQKEY',
+            'PATIENTID',
+            'PATIENTNAME',
+            'PATIENTFIRSTNAME',
+            'PATIENTOFFICENAME',
+            'PATIENTDATEOFBIRTH',
+            'FACILITYPATIENTID',
+            'LASTOVER65',
+            'LASTCOMPLIANT',
+            'LASTTHERAPYMODEGROUP',
+        ])
         .select()
         .orderBy([{ column: 'PATIENTID', order: 'desc' }])
         .limit(count)
